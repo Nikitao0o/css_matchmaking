@@ -20,7 +20,6 @@ def create_user(db: Session, username: str, email: str, password: str) -> User:
     db.commit()
     db.refresh(user)
 
-    # Create initial stats row
     stats = PlayerStats(user_id=user.id)
     db.add(stats)
     db.commit()

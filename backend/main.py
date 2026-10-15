@@ -1,6 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from rooms import manager
-from models import MatchReport, ControlSignal
+from models import MatchReport, ControlSignal, User, UserCreate, UserResponse, MatchRoom
+from auth import create_user
+from database import Base, engine, get_db
+from sqlalchemy.orm import Session
+from srcds.rcon import RconConnection
+import json
 
 app = FastAPI()
 
@@ -22,7 +27,7 @@ async def send_control(signal: ControlSignal):
     await manager.broadcast(signal.roomId, f"count: {signal.command}")
     return {"ok": True}
 
-# Debug endpoint
+# Debug
 @app.get("/api/rooms")
 async def list_rooms():
     return {room: len(clients) for room, clients in manager.rooms.items()}
@@ -53,7 +58,6 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                     "response": response
                 }))
 
-            # Optional: broadcast chat or other messages to the room
             elif msg.get("type") == "chat":
                 await manager.broadcast(room_id, json.dumps({
                     "type": "chat",
@@ -61,6 +65,15 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 }))
     except WebSocketDisconnect:
         manager.leave(room_id, websocket)
+
+def send_rcon_command(command: str) -> str:
+    try:
+        conn = RconConnection(RCON_HOST, port=RCON_PORT, password=RCON_PASSWORD)
+        response = conn.exec_commnd(command)
+        conn.close()
+        return response
+    except Exception as e:
+        return f"RCON Error: {e}"
 
 def handle_control_command(command: str, args: dict) -> str:
     """Map control commands to RCON commands."""

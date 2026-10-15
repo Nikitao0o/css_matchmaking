@@ -1,8 +1,8 @@
 fastapi
 uvicorn[standard]
 websockets
-sqlalchemy
-psycopg2-binary
+sqlalchemy>=2.0
+psycopg[binary]
 passlib[bcrypt]
 pysrcds
 pydantic
