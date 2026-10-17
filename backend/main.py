@@ -9,7 +9,7 @@ import json
 
 app = FastAPI()
 
-RCON_HOST = "127.0.1.1"
+RCON_HOST = "172.29.197.196"
 RCON_PORT = 27015
 RCON_PASSWORD = "1111"
 

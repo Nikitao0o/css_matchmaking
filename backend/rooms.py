@@ -5,7 +5,7 @@ class RoomManager:
     def __init__(self):
         self.rooms: dict[str, list[WebSocket]] = defaultdict(list)
 
-    async def join(self, room: str, ws: websocket):
+    async def join(self, room: str, ws: WebSocket):
         await ws.accept()
         self.rooms[room].append(ws)
 
