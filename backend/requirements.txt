@@ -3,7 +3,7 @@ uvicorn[standard]
 websockets
 sqlalchemy>=2.0
 psycopg[binary]
-passlib[bcrypt]
 pysrcds
 pydantic
 email-validator
+fastapi-steam[fastapi]

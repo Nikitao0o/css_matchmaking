@@ -19,5 +19,10 @@ class RoomManager:
                 await ws.send_text(message)
             except:
                 self.leave(room, ws)
+    
+    def count(self, room: str) -> int:
+        return len(self.rooms[room])
+
+
 
 manager = RoomManager()
