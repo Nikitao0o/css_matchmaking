@@ -1,0 +1,3003 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+public/
+  favicon.svg
+  icons.svg
+src/
+  assets/
+    hero.png
+    react.svg
+    vite.svg
+  auth/
+    AuthContext.tsx
+    RequireAuth.tsx
+  components/
+    AuthCard.tsx
+    Field.tsx
+    Footer.tsx
+    KeyValueList.tsx
+    Logo.tsx
+    PageContainer.tsx
+    PageHeader.tsx
+    Panel.tsx
+    PlayerAvatar.tsx
+    RatingChart.tsx
+    StatusBadge.tsx
+    tableSx.ts
+    UserMenu.tsx
+  data/
+    mock.ts
+  layouts/
+    AuthLayout.tsx
+    MainLayout.tsx
+    PlayLayout.tsx
+  pages/
+    ComingSoonPage.tsx
+    ErrorPage.tsx
+    LoginPage.tsx
+    MatchesPage.tsx
+    MatchPage.tsx
+    NotFoundPage.tsx
+    PlayPage.tsx
+    ProfilePage.tsx
+    RegisterPage.tsx
+  router/
+    paths.ts
+    router.tsx
+    routerr.tsx
+  App.css
+  App.tsx
+  index.css
+  main.tsx
+  theme.ts
+  types.ts
+.gitignore
+.oxlintrc.json
+index.html
+package.json
+README.md
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="public/favicon.svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" fill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(display-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" height="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.133c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -34.34 30.47)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#ede6ff" rx="14.072" ry="22.078" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="rotate(93.35 24.506 48.493)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx=".387" cy="8.972" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(39.51 .387 8.972)"/></g><g filter="url(#k)"><ellipse cx="47.523" cy="-6.092" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 47.523 -6.092)"/></g><g filter="url(#l)"><ellipse cx="41.412" cy="6.333" fill="#47bfff" rx="5.971" ry="9.665" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 41.412 6.333)"/></g><g filter="url(#m)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#n)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#o)"><ellipse cx="35.651" cy="29.907" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 35.651 29.907)"/></g><g filter="url(#p)"><ellipse cx="38.418" cy="32.4" fill="#47bfff" rx="5.971" ry="15.297" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 38.418 32.4)"/></g></g><defs><filter id="b" width="60.045" height="41.654" x="-19.77" y="16.149" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-54.613" y="-7.533" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-49.64" y="2.03" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-45.045" y="20.029" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-43.513" y="21.178" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="15.756" y="-17.901" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-27.636" y="-22.853" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="20.116" y="-38.415" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="24.641" y="-11.323" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="8.244" y="-2.416" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="18.713" y="10.588" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter></defs></svg>
+</file>
+
+<file path="public/icons.svg">
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="bluesky-icon" viewBox="0 0 16 17">
+    <g clip-path="url(#bluesky-clip)"><path fill="#08060d" d="M7.75 7.735c-.693-1.348-2.58-3.86-4.334-5.097-1.68-1.187-2.32-.981-2.74-.79C.188 2.065.1 2.812.1 3.251s.241 3.602.398 4.13c.52 1.744 2.367 2.333 4.07 2.145-2.495.37-4.71 1.278-1.805 4.512 3.196 3.309 4.38-.71 4.987-2.746.608 2.036 1.307 5.91 4.93 2.746 2.72-2.746.747-4.143-1.747-4.512 1.702.189 3.55-.4 4.07-2.145.156-.528.397-3.691.397-4.13s-.088-1.186-.575-1.406c-.42-.19-1.06-.395-2.741.79-1.755 1.24-3.64 3.752-4.334 5.099"/></g>
+    <defs><clipPath id="bluesky-clip"><path fill="#fff" d="M.1.85h15.3v15.3H.1z"/></clipPath></defs>
+  </symbol>
+  <symbol id="discord-icon" viewBox="0 0 20 19">
+    <path fill="#08060d" d="M16.224 3.768a14.5 14.5 0 0 0-3.67-1.153c-.158.286-.343.67-.47.976a13.5 13.5 0 0 0-4.067 0c-.128-.306-.317-.69-.476-.976A14.4 14.4 0 0 0 3.868 3.77C1.546 7.28.916 10.703 1.231 14.077a14.7 14.7 0 0 0 4.5 2.306q.545-.748.965-1.587a9.5 9.5 0 0 1-1.518-.74q.191-.14.372-.293c2.927 1.369 6.107 1.369 8.999 0q.183.152.372.294-.723.437-1.52.74.418.838.963 1.588a14.6 14.6 0 0 0 4.504-2.308c.37-3.911-.63-7.302-2.644-10.309m-9.13 8.234c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.894 0 1.614.82 1.599 1.82.001 1-.705 1.82-1.6 1.82m5.91 0c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.893 0 1.614.82 1.599 1.82 0 1-.706 1.82-1.6 1.82"/>
+  </symbol>
+  <symbol id="documentation-icon" viewBox="0 0 21 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="m15.5 13.333 1.533 1.322c.645.555.967.833.967 1.178s-.322.623-.967 1.179L15.5 18.333m-3.333-5-1.534 1.322c-.644.555-.966.833-.966 1.178s.322.623.966 1.179l1.534 1.321"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M17.167 10.836v-4.32c0-1.41 0-2.117-.224-2.68-.359-.906-1.118-1.621-2.08-1.96-.599-.21-1.349-.21-2.848-.21-2.623 0-3.935 0-4.983.369-1.684.591-3.013 1.842-3.641 3.428C3 6.449 3 7.684 3 10.154v2.122c0 2.558 0 3.838.706 4.726q.306.383.713.671c.76.536 1.79.64 3.581.66"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M3 10a2.78 2.78 0 0 1 2.778-2.778c.555 0 1.209.097 1.748-.047.48-.129.854-.503.982-.982.145-.54.048-1.194.048-1.749a2.78 2.78 0 0 1 2.777-2.777"/>
+  </symbol>
+  <symbol id="github-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M9.356 1.85C5.05 1.85 1.57 5.356 1.57 9.694a7.84 7.84 0 0 0 5.324 7.44c.387.079.528-.168.528-.376 0-.182-.013-.805-.013-1.454-2.165.467-2.616-.935-2.616-.935-.349-.91-.864-1.143-.864-1.143-.71-.48.051-.48.051-.48.787.051 1.2.805 1.2.805.695 1.194 1.817.857 2.268.649.064-.507.27-.857.49-1.052-1.728-.182-3.545-.857-3.545-3.87 0-.857.31-1.558.8-2.104-.078-.195-.349-1 .077-2.078 0 0 .657-.208 2.14.805a7.5 7.5 0 0 1 1.946-.26c.657 0 1.328.092 1.946.26 1.483-1.013 2.14-.805 2.14-.805.426 1.078.155 1.883.078 2.078.502.546.799 1.247.799 2.104 0 3.013-1.818 3.675-3.558 3.87.284.247.528.714.528 1.454 0 1.052-.012 1.896-.012 2.156 0 .208.142.455.528.377a7.84 7.84 0 0 0 5.324-7.441c.013-4.338-3.48-7.844-7.773-7.844" clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="social-icon" viewBox="0 0 20 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M12.5 6.667a4.167 4.167 0 1 0-8.334 0 4.167 4.167 0 0 0 8.334 0"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M2.5 16.667a5.833 5.833 0 0 1 8.75-5.053m3.837.474.513 1.035c.07.144.257.282.414.309l.93.155c.596.1.736.536.307.965l-.723.73a.64.64 0 0 0-.152.531l.207.903c.164.715-.213.991-.84.618l-.872-.52a.63.63 0 0 0-.577 0l-.872.52c-.624.373-1.003.094-.84-.618l.207-.903a.64.64 0 0 0-.152-.532l-.723-.729c-.426-.43-.289-.864.306-.964l.93-.156a.64.64 0 0 0 .412-.31l.513-1.034c.28-.562.735-.562 1.012 0"/>
+  </symbol>
+  <symbol id="x-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M1.893 1.98c.052.072 1.245 1.769 2.653 3.77l2.892 4.114c.183.261.333.48.333.486s-.068.089-.152.183l-.522.593-.765.867-3.597 4.087c-.375.426-.734.834-.798.905a1 1 0 0 0-.118.148c0 .01.236.017.664.017h.663l.729-.83c.4-.457.796-.906.879-.999a692 692 0 0 0 1.794-2.038c.034-.037.301-.34.594-.675l.551-.624.345-.392a7 7 0 0 1 .34-.374c.006 0 .93 1.306 2.052 2.903l2.084 2.965.045.063h2.275c1.87 0 2.273-.003 2.266-.021-.008-.02-1.098-1.572-3.894-5.547-2.013-2.862-2.28-3.246-2.273-3.266.008-.019.282-.332 2.085-2.38l2-2.274 1.567-1.782c.022-.028-.016-.03-.65-.03h-.674l-.3.342a871 871 0 0 1-1.782 2.025c-.067.075-.405.458-.75.852a100 100 0 0 1-.803.91c-.148.172-.299.344-.99 1.127-.304.343-.32.358-.345.327-.015-.019-.904-1.282-1.976-2.808L6.365 1.85H1.8zm1.782.91 8.078 11.294c.772 1.08 1.413 1.973 1.425 1.984.016.017.241.02 1.05.017l1.03-.004-2.694-3.766L7.796 5.75 5.722 2.852l-1.039-.004-1.039-.004z" clip-rule="evenodd"/>
+  </symbol>
+</svg>
+</file>
+
+<file path="src/assets/react.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="35.93" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 228"><path fill="#00D8FF" d="M210.483 73.824a171.49 171.49 0 0 0-8.24-2.597c.465-1.9.893-3.777 1.273-5.621c6.238-30.281 2.16-54.676-11.769-62.708c-13.355-7.7-35.196.329-57.254 19.526a171.23 171.23 0 0 0-6.375 5.848a155.866 155.866 0 0 0-4.241-3.917C100.759 3.829 77.587-4.822 63.673 3.233C50.33 10.957 46.379 33.89 51.995 62.588a170.974 170.974 0 0 0 1.892 8.48c-3.28.932-6.445 1.924-9.474 2.98C17.309 83.498 0 98.307 0 113.668c0 15.865 18.582 31.778 46.812 41.427a145.52 145.52 0 0 0 6.921 2.165a167.467 167.467 0 0 0-2.01 9.138c-5.354 28.2-1.173 50.591 12.134 58.266c13.744 7.926 36.812-.22 59.273-19.855a145.567 145.567 0 0 0 5.342-4.923a168.064 168.064 0 0 0 6.92 6.314c21.758 18.722 43.246 26.282 56.54 18.586c13.731-7.949 18.194-32.003 12.4-61.268a145.016 145.016 0 0 0-1.535-6.842c1.62-.48 3.21-.974 4.76-1.488c29.348-9.723 48.443-25.443 48.443-41.52c0-15.417-17.868-30.326-45.517-39.844Zm-6.365 70.984c-1.4.463-2.836.91-4.3 1.345c-3.24-10.257-7.612-21.163-12.963-32.432c5.106-11 9.31-21.767 12.459-31.957c2.619.758 5.16 1.557 7.61 2.4c23.69 8.156 38.14 20.213 38.14 29.504c0 9.896-15.606 22.743-40.946 31.14Zm-10.514 20.834c2.562 12.94 2.927 24.64 1.23 33.787c-1.524 8.219-4.59 13.698-8.382 15.893c-8.067 4.67-25.32-1.4-43.927-17.412a156.726 156.726 0 0 1-6.437-5.87c7.214-7.889 14.423-17.06 21.459-27.246c12.376-1.098 24.068-2.894 34.671-5.345a134.17 134.17 0 0 1 1.386 6.193ZM87.276 214.515c-7.882 2.783-14.16 2.863-17.955.675c-8.075-4.657-11.432-22.636-6.853-46.752a156.923 156.923 0 0 1 1.869-8.499c10.486 2.32 22.093 3.988 34.498 4.994c7.084 9.967 14.501 19.128 21.976 27.15a134.668 134.668 0 0 1-4.877 4.492c-9.933 8.682-19.886 14.842-28.658 17.94ZM50.35 144.747c-12.483-4.267-22.792-9.812-29.858-15.863c-6.35-5.437-9.555-10.836-9.555-15.216c0-9.322 13.897-21.212 37.076-29.293c2.813-.98 5.757-1.905 8.812-2.773c3.204 10.42 7.406 21.315 12.477 32.332c-5.137 11.18-9.399 22.249-12.634 32.792a134.718 134.718 0 0 1-6.318-1.979Zm12.378-84.26c-4.811-24.587-1.616-43.134 6.425-47.789c8.564-4.958 27.502 2.111 47.463 19.835a144.318 144.318 0 0 1 3.841 3.545c-7.438 7.987-14.787 17.08-21.808 26.988c-12.04 1.116-23.565 2.908-34.161 5.309a160.342 160.342 0 0 1-1.76-7.887Zm110.427 27.268a347.8 347.8 0 0 0-7.785-12.803c8.168 1.033 15.994 2.404 23.343 4.08c-2.206 7.072-4.956 14.465-8.193 22.045a381.151 381.151 0 0 0-7.365-13.322Zm-45.032-43.861c5.044 5.465 10.096 11.566 15.065 18.186a322.04 322.04 0 0 0-30.257-.006c4.974-6.559 10.069-12.652 15.192-18.18ZM82.802 87.83a323.167 323.167 0 0 0-7.227 13.238c-3.184-7.553-5.909-14.98-8.134-22.152c7.304-1.634 15.093-2.97 23.209-3.984a321.524 321.524 0 0 0-7.848 12.897Zm8.081 65.352c-8.385-.936-16.291-2.203-23.593-3.793c2.26-7.3 5.045-14.885 8.298-22.6a321.187 321.187 0 0 0 7.257 13.246c2.594 4.48 5.28 8.868 8.038 13.147Zm37.542 31.03c-5.184-5.592-10.354-11.779-15.403-18.433c4.902.192 9.899.29 14.978.29c5.218 0 10.376-.117 15.453-.343c-4.985 6.774-10.018 12.97-15.028 18.486Zm52.198-57.817c3.422 7.8 6.306 15.345 8.596 22.52c-7.422 1.694-15.436 3.058-23.88 4.071a382.417 382.417 0 0 0 7.859-13.026a347.403 347.403 0 0 0 7.425-13.565Zm-16.898 8.101a358.557 358.557 0 0 1-12.281 19.815a329.4 329.4 0 0 1-23.444.823c-7.967 0-15.716-.248-23.178-.732a310.202 310.202 0 0 1-12.513-19.846h.001a307.41 307.41 0 0 1-10.923-20.627a310.278 310.278 0 0 1 10.89-20.637l-.001.001a307.318 307.318 0 0 1 12.413-19.761c7.613-.576 15.42-.876 23.31-.876H128c7.926 0 15.743.303 23.354.883a329.357 329.357 0 0 1 12.335 19.695a358.489 358.489 0 0 1 11.036 20.54a329.472 329.472 0 0 1-11 20.722Zm22.56-122.124c8.572 4.944 11.906 24.881 6.52 51.026c-.344 1.668-.73 3.367-1.15 5.09c-10.622-2.452-22.155-4.275-34.23-5.408c-7.034-10.017-14.323-19.124-21.64-27.008a160.789 160.789 0 0 1 5.888-5.4c18.9-16.447 36.564-22.941 44.612-18.3ZM128 90.808c12.625 0 22.86 10.235 22.86 22.86s-10.235 22.86-22.86 22.86s-22.86-10.235-22.86-22.86s10.235-22.86 22.86-22.86Z"></path></svg>
+</file>
+
+<file path="src/assets/vite.svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="77" height="47" fill="none" aria-labelledby="vite-logo-title" viewBox="0 0 77 47"><title id="vite-logo-title">Vite</title><style>.parenthesis{fill:#000}@media (prefers-color-scheme:dark){.parenthesis{fill:#fff}}</style><path fill="#9135ff" d="M40.151 45.71c-.663.844-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.493c-.92 0-1.457-1.04-.92-1.788l7.479-10.471c1.07-1.498 0-3.578-1.842-3.578H15.443c-.92 0-1.456-1.04-.92-1.788l9.696-13.576c.213-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.472c-1.07 1.497 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.087.89 1.83L40.153 45.712z"/><mask id="a" width="48" height="47" x="14" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M40.047 45.71c-.663.843-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.389c-.92 0-1.457-1.04-.92-1.788l7.479-10.472c1.07-1.497 0-3.578-1.842-3.578H15.34c-.92 0-1.456-1.04-.92-1.788l9.696-13.575c.213-.297.556-.474.92-.474H53.93c.92 0 1.456 1.04.92 1.788L47.37 13.03c-1.07 1.498 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.088.89 1.831L40.049 45.712z"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#eee6ff" rx="5.508" ry="14.704" transform="rotate(269.814 20.96 11.29)scale(-1 1)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#eee6ff" rx="10.399" ry="29.851" transform="rotate(89.814 -16.902 -8.275)scale(1 -1)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#8900ff" rx="5.508" ry="30.487" transform="rotate(89.814 -19.197 -7.127)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.928 4.177)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.738 5.52)scale(1 -1)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#eee6ff" rx="14.072" ry="22.078" transform="rotate(93.35 31.245 55.578)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx="14.592" cy="9.743" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(39.51 14.592 9.743)"/></g><g filter="url(#k)"><ellipse cx="61.728" cy="-5.321" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 61.728 -5.32)"/></g><g filter="url(#l)"><ellipse cx="55.618" cy="7.104" fill="#00c2ff" rx="5.971" ry="9.665" transform="rotate(37.892 55.618 7.104)"/></g><g filter="url(#m)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#n)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#o)"><ellipse cx="49.857" cy="30.678" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 49.857 30.678)"/></g><g filter="url(#p)"><ellipse cx="52.623" cy="33.171" fill="#00c2ff" rx="5.971" ry="15.297" transform="rotate(37.892 52.623 33.17)"/></g></g><path d="M6.919 0c-9.198 13.166-9.252 33.575 0 46.789h6.215c-9.25-13.214-9.196-33.623 0-46.789zm62.424 0h-6.215c9.198 13.166 9.252 33.575 0 46.789h6.215c9.25-13.214 9.196-33.623 0-46.789" class="parenthesis"/><defs><filter id="b" width="60.045" height="41.654" x="-5.564" y="16.92" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-40.407" y="-6.762" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-35.435" y="2.801" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-30.84" y="20.8" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-29.307" y="21.949" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="29.961" y="-17.13" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-13.43" y="-22.082" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="34.321" y="-37.644" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="38.847" y="-10.552" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="22.45" y="-1.645" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="32.919" y="11.36" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter></defs></svg>
+</file>
+
+<file path="src/auth/AuthContext.tsx">
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { currentPlayer } from '../data/mock';
+import type { Player } from '../types';
+
+interface AuthUser {
+  email: string;
+  player: Player;
+}
+
+interface AuthContextValue {
+  user: AuthUser | null;
+  /** Mock implementation – replace with a real API call. */
+  login: (email: string, password: string, remember: boolean) => Promise<void>;
+  register: (playerName: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+const STORAGE_KEY = 'mm.user';
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function readStored(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+function store(user: AuthUser | null, remember: boolean) {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+    if (user) (remember ? localStorage : sessionStorage).setItem(STORAGE_KEY, JSON.stringify(user));
+  } catch {
+    /* storage unavailable – keep in memory only */
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(readStored);
+
+  const login = useCallback<AuthContextValue['login']>(async (email, _password, remember) => {
+    const next = { email, player: currentPlayer };
+    store(next, remember);
+    setUser(next);
+  }, []);
+
+  const register = useCallback<AuthContextValue['register']>(async (playerName, email) => {
+    const next: AuthUser = {
+      email,
+      player: { ...currentPlayer, name: playerName, initials: playerName.slice(0, 2).toUpperCase() },
+    };
+    store(next, true);
+    setUser(next);
+  }, []);
+
+  const logout = useCallback(() => {
+    store(null, false);
+    setUser(null);
+  }, []);
+
+  const value = useMemo(() => ({ user, login, register, logout }), [user, login, register, logout]);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
+  return ctx;
+}
+</file>
+
+<file path="src/auth/RequireAuth.tsx">
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+
+export default function RequireAuth() {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
+}
+</file>
+
+<file path="src/components/AuthCard.tsx">
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
+import type { ReactNode } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { colors } from '../theme';
+
+interface Props {
+  tab: 'login' | 'register';
+  /** Small text under the card. */
+  note: ReactNode;
+  /** Footer row inside the card (e.g. "Don't have an account?"). */
+  footer: ReactNode;
+  children: ReactNode;
+}
+
+export default function AuthCard({ tab, note, footer, children }: Props) {
+  return (
+    <Box sx={{ width: '100%', maxWidth: 440 }}>
+      <Typography sx={{ textAlign: 'center', fontSize: 12, color: 'text.disabled', mb: 2 }}>
+        Counter-Strike:Source · 5v5 Ranked
+      </Typography>
+
+      <Box sx={{ border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Tabs value={tab} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tab component={RouterLink} to="/login" value="login" label="Log in" />
+          <Tab component={RouterLink} to="/register" value="register" label="Create account" />
+        </Tabs>
+
+        <Box sx={{ p: 3 }}>{children}</Box>
+
+        <Box sx={{ borderTop: 1, borderColor: 'divider', bgcolor: colors.header, py: 2, textAlign: 'center', fontSize: 13, color: 'text.secondary' }}>
+          {footer}
+        </Box>
+      </Box>
+
+      <Typography sx={{ textAlign: 'center', fontSize: 12, color: 'text.disabled', mt: 2 }}>{note}</Typography>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/Field.tsx">
+import Visibility from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOff from '@mui/icons-material/VisibilityOffOutlined';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Typography from '@mui/material/Typography';
+import { useId, useState, type ChangeEvent } from 'react';
+
+interface Props {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  helperText?: string;
+  error?: string;
+  type?: 'text' | 'email' | 'password';
+  autoComplete?: string;
+  autoFocus?: boolean;
+}
+
+/** Label-on-top input. `type="password"` gets a show/hide toggle. */
+export default function Field({ label, value, onChange, placeholder, helperText, error, type = 'text', autoComplete, autoFocus }: Props) {
+  const id = useId();
+  const [visible, setVisible] = useState(false);
+  const isPassword = type === 'password';
+
+  return (
+    <FormControl fullWidth error={Boolean(error)} sx={{ mb: 2.5 }}>
+      <Typography component="label" htmlFor={id} sx={{ fontSize: 12, color: 'text.secondary', mb: 0.75 }}>
+        {label}
+      </Typography>
+      <OutlinedInput
+        id={id}
+        value={value}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+        placeholder={placeholder}
+        type={isPassword && visible ? 'text' : type}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
+        endAdornment={
+          isPassword ? (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                edge="end"
+                aria-label={visible ? 'Hide password' : 'Show password'}
+                onClick={() => setVisible((v) => !v)}
+                onMouseDown={(e) => e.preventDefault()}
+                sx={{ color: 'text.disabled' }}
+              >
+                {visible ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+              </IconButton>
+            </InputAdornment>
+          ) : undefined
+        }
+      />
+      {(error || helperText) && (
+        <FormHelperText sx={{ mx: 0, mt: 0.75, fontSize: 12 }}>{error ?? helperText}</FormHelperText>
+      )}
+    </FormControl>
+  );
+}
+</file>
+
+<file path="src/components/Footer.tsx">
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { Link as RouterLink } from 'react-router-dom';
+import PageContainer from './PageContainer';
+
+const links = [
+  { label: 'Rules', to: '/rules' },
+  { label: 'Support', to: '/support' },
+  { label: 'Privacy', to: '/privacy' },
+  { label: 'Terms', to: '/terms' },
+];
+
+export default function Footer() {
+  return (
+    <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', py: 4.5 }}>
+      <PageContainer sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="body2" color="text.disabled">
+          © 2026 STACK · Competitive Counter-Strike
+        </Typography>
+        <Stack direction="row" spacing={3}>
+          {links.map((l) => (
+            <Link key={l.label} component={RouterLink} to={l.to} variant="body2" color="text.disabled" underline="hover">
+              {l.label}
+            </Link>
+          ))}
+        </Stack>
+      </PageContainer>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/KeyValueList.tsx">
+import Box from '@mui/material/Box';
+import type { ReactNode } from 'react';
+
+export interface KeyValue {
+  label: string;
+  value: ReactNode;
+}
+
+export default function KeyValueList({ items }: { items: KeyValue[] }) {
+  return (
+    <Box sx={{ p: 2, display: 'grid', rowGap: 1.5 }}>
+      {items.map((it) => (
+        <Box key={it.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, fontSize: 13 }}>
+          <Box sx={{ color: 'text.disabled' }}>{it.label}</Box>
+          <Box sx={{ fontWeight: 600, textAlign: 'right' }}>{it.value}</Box>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/Logo.tsx">
+import CrisisAlertIcon from '@mui/icons-material/CrisisAlert';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { Link as RouterLink } from 'react-router-dom';
+
+export default function Logo({ withIcon = false, to = '/' }: { withIcon?: boolean; to?: string }) {
+  return (
+    <Stack component={RouterLink} to={to} direction="row" alignItems="center" spacing={1.25} sx={{ textDecoration: 'none', color: 'text.primary' }}>
+      {withIcon && <CrisisAlertIcon sx={{ fontSize: 22 }} />}
+      <Typography component="span" sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
+        matchmaking
+      </Typography>
+    </Stack>
+  );
+}
+</file>
+
+<file path="src/components/PageContainer.tsx">
+import Box from '@mui/material/Box';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { ReactNode } from 'react';
+import { PAGE_MAX_WIDTH } from '../theme';
+
+export default function PageContainer({ children, sx }: { children: ReactNode; sx?: SxProps<Theme> }) {
+  return (
+    <Box sx={[{ width: '100%', maxWidth: PAGE_MAX_WIDTH, mx: 'auto', px: 3 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      {children}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/PageHeader.tsx">
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import type { ReactNode } from 'react';
+
+interface Props {
+  crumbs: string[];
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+}
+
+export default function PageHeader({ crumbs, title, subtitle, action }: Props) {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, pt: 4, pb: 3 }}>
+      <Box>
+        <Typography sx={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'text.disabled', mb: 1.5 }}>
+          {crumbs.join(' / ')}
+        </Typography>
+        <Typography variant="h1" component="h1">
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography sx={{ mt: 0.5, color: 'text.disabled' }} variant="body1">
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+      {action}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/Panel.tsx">
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { ReactNode } from 'react';
+
+interface Props {
+  title: string;
+  caption?: ReactNode;
+  centerTitle?: boolean;
+  children: ReactNode;
+  sx?: SxProps<Theme>;
+  bodySx?: SxProps<Theme>;
+}
+
+/** Bordered card with a 40px header – the basic building block of every page. */
+export default function Panel({ title, caption, centerTitle, children, sx, bodySx }: Props) {
+  return (
+    <Box component="section" sx={[{ border: 1, borderColor: 'divider', bgcolor: 'background.paper' }, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box
+        sx={{
+          height: 40,
+          px: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          display: centerTitle ? 'grid' : 'flex',
+          gridTemplateColumns: centerTitle ? '1fr auto 1fr' : undefined,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {centerTitle && <span />}
+        <Typography variant="h3" component="h2">
+          {title}
+        </Typography>
+        <Box sx={{ justifySelf: 'end', color: 'text.disabled', fontSize: 12 }}>{caption}</Box>
+      </Box>
+      <Box sx={bodySx}>{children}</Box>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/PlayerAvatar.tsx">
+import Box from '@mui/material/Box';
+import type { SxProps, Theme } from '@mui/material/styles';
+import { colors } from '../theme';
+
+interface Props {
+  initials: string;
+  size?: number;
+  sx?: SxProps<Theme>;
+}
+
+/** Square initials tile used everywhere a player picture would go. */
+export default function PlayerAvatar({ initials, size = 32, sx }: Props) {
+  return (
+    <Box
+      aria-hidden
+      sx={[
+        {
+          width: size,
+          height: size,
+          flexShrink: 0,
+          display: 'grid',
+          placeItems: 'center',
+          bgcolor: '#1B2432',
+          border: `1px solid ${colors.border}`,
+          color: 'text.primary',
+          fontWeight: 600,
+          fontSize: Math.round(size * 0.36),
+          letterSpacing: '0.02em',
+          userSelect: 'none',
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      {initials}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/RatingChart.tsx">
+import Box from '@mui/material/Box';
+import { colors } from '../theme';
+
+interface Props {
+  values: number[];
+  labels: string[];
+  min?: number;
+  max?: number;
+  ticks?: number[];
+}
+
+const W = 840;
+const H = 170;
+const PAD = { l: 54, r: 8, t: 12, b: 28 };
+
+/** Dependency-free SVG line chart that scales with its container. */
+export default function RatingChart({ values, labels, min = 1700, max = 1900, ticks = [1700, 1800, 1900] }: Props) {
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+  const y = (v: number) => PAD.t + innerH - ((v - min) / (max - min)) * innerH;
+  const x = (i: number) => PAD.l + (i / Math.max(values.length - 1, 1)) * innerW;
+
+  const points = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+
+  return (
+    <Box
+      component="svg"
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label="ELO rating history"
+      sx={{ width: '100%', height: 'auto', display: 'block' }}
+    >
+      {ticks.map((t) => (
+        <g key={t}>
+          <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} stroke={colors.border} strokeWidth={1} />
+          <text x={0} y={y(t) + 4} fill={colors.muted} fontSize={11}>
+            {t.toLocaleString('en-US')}
+          </text>
+        </g>
+      ))}
+      <polyline points={points} fill="none" stroke={colors.primary} strokeWidth={1.75} strokeLinejoin="round" strokeLinecap="round" />
+      {labels.map((l, i) => {
+        const px = PAD.l + (i / (labels.length - 1)) * innerW;
+        const anchor = i === 0 ? 'start' : i === labels.length - 1 ? 'end' : 'middle';
+        return (
+          <text key={l} x={px} y={H - 6} fill={colors.muted} fontSize={11} textAnchor={anchor}>
+            {l}
+          </text>
+        );
+      })}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/StatusBadge.tsx">
+import Box from '@mui/material/Box';
+import { colors } from '../theme';
+
+type Tone = 'primary' | 'success';
+
+export default function StatusBadge({ label, tone = 'primary' }: { label: string; tone?: Tone }) {
+  const c = tone === 'success' ? colors.success : colors.primary;
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        px: 1,
+        height: 22,
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: '0.04em',
+        color: c,
+        bgcolor: colors.selected,
+        borderRadius: '2px',
+      }}
+    >
+      <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: c }} />
+      {label}
+    </Box>
+  );
+}
+</file>
+
+<file path="src/components/tableSx.ts">
+import type { SxProps, Theme } from '@mui/material/styles';
+import { colors } from '../theme';
+
+/** Shared dense-table look used by match history, team rosters and map stats. */
+export const denseTableSx: SxProps<Theme> = {
+  '& .MuiTableCell-root': {
+    borderBottom: `1px solid ${colors.border}`,
+    px: 2,
+    py: 1.25,
+    fontSize: 13,
+    color: 'text.primary',
+  },
+  '& .MuiTableHead-root .MuiTableCell-root': {
+    fontSize: 11,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: 'text.disabled',
+    fontWeight: 500,
+    py: 1,
+  },
+  '& .MuiTableBody-root .MuiTableRow-root:last-of-type .MuiTableCell-root': { borderBottom: 0 },
+};
+</file>
+
+<file path="src/components/UserMenu.tsx">
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import Box from '@mui/material/Box';
+import ButtonBase from '@mui/material/ButtonBase';
+import Divider from '@mui/material/Divider';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import PlayerAvatar from './PlayerAvatar';
+
+const fmt = new Intl.NumberFormat('en-US');
+
+export default function UserMenu() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  if (!user) return null;
+  const { player } = user;
+
+  const go = (to: string) => {
+    setAnchor(null);
+    navigate(to);
+  };
+
+  return (
+    <>
+      <ButtonBase
+        onClick={(e) => setAnchor(e.currentTarget)}
+        aria-haspopup="menu"
+        aria-expanded={Boolean(anchor)}
+        sx={{ display: 'flex', alignItems: 'center', gap: 1.25, textAlign: 'left', py: 0.5 }}
+      >
+        <PlayerAvatar initials={player.initials} size={32} />
+        <Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{player.name}</Typography>
+          <Typography sx={{ fontSize: 11, color: 'text.disabled', lineHeight: 1.4 }}>
+            {fmt.format(player.elo)} ELO · Level {player.level}
+          </Typography>
+        </Box>
+        <KeyboardArrowDown fontSize="small" sx={{ color: 'text.secondary' }} />
+      </ButtonBase>
+      <Menu
+        anchorEl={anchor}
+        open={Boolean(anchor)}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { minWidth: 180, mt: 0.5, border: 1, borderColor: 'divider' } } }}
+      >
+        <MenuItem onClick={() => go('/play')}>
+          <ListItemText>Find a match</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => go(`/players/${player.name}`)}>
+          <ListItemText>My profile</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            setAnchor(null);
+            logout();
+            navigate('/login');
+          }}
+        >
+          <ListItemText>Log out</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+</file>
+
+<file path="src/data/mock.ts">
+import type { ChatMessage, MapStat, MatchHistoryRow, MatchInfo, PartySlot, Player } from '../types';
+
+const p = (name: string, countryCode: string, country: string, elo: number, level: number): Player => ({
+  name,
+  initials: name.slice(0, 2).toUpperCase(),
+  countryCode,
+  country,
+  elo,
+  level,
+});
+
+export const currentPlayer: Player = p('vex', 'SE', 'Sweden', 1842, 8);
+
+export const playerSummary = {
+  realName: 'Alex Lindberg',
+  memberSince: 'March 2023',
+  rank: 1284,
+  region: 'Europe',
+  matches: 348,
+  winRate: 56,
+  avgKd: 1.24,
+  avgKills: 21.4,
+  last5: ['W', 'W', 'L', 'W', 'L'] as const,
+  joined: '14 Mar 2023',
+  lastPlayed: '12 Oct 2026',
+  steamName: 'vex',
+  steamUrl: 'https://steamcommunity.com/',
+  status: 'Verified',
+  online: true,
+  eloThisMonth: 142,
+};
+
+export const ratingHistory = {
+  labels: ['14 Sep', '21 Sep', '28 Sep', '05 Oct', '13 Oct'],
+  values: [
+    1700, 1722, 1708, 1752, 1741, 1782, 1767, 1809, 1790, 1812, 1765, 1800, 1830, 1810, 1850, 1825,
+    1812, 1855, 1838, 1872, 1845, 1862, 1850, 1878, 1862, 1840, 1818, 1850, 1880, 1858,
+  ],
+};
+
+export const matchHistory: MatchHistoryRow[] = [
+  { id: '482193', date: '12 Oct, 21:34', map: 'Mirage', result: 'W', score: '13 : 9', kda: '24 / 15 / 6', eloDelta: 25 },
+  { id: '482150', date: '12 Oct, 20:42', map: 'Ancient', result: 'W', score: '13 : 7', kda: '21 / 12 / 4', eloDelta: 24 },
+  { id: '481977', date: '11 Oct, 22:18', map: 'Inferno', result: 'L', score: '10 : 13', kda: '18 / 20 / 7', eloDelta: -25 },
+  { id: '481902', date: '11 Oct, 21:06', map: 'Dust II', result: 'W', score: '13 : 11', kda: '26 / 19 / 3', eloDelta: 26 },
+  { id: '481730', date: '10 Oct, 19:52', map: 'Nuke', result: 'L', score: '8 : 13', kda: '14 / 18 / 5', eloDelta: -24 },
+];
+
+export const mapStats: MapStat[] = [
+  { map: 'Mirage', played: 16, winRate: 63 },
+  { map: 'Inferno', played: 12, winRate: 58 },
+  { map: 'Ancient', played: 10, winRate: 60 },
+  { map: 'Dust II', played: 7, winRate: 43 },
+  { map: 'Nuke', played: 5, winRate: 40 },
+];
+
+export const initialParty: PartySlot[] = [
+  { kind: 'player', player: currentPlayer, ready: true, leader: true },
+  { kind: 'player', player: p('miko', 'FI', 'Finland', 1796, 8), ready: true },
+  { kind: 'player', player: p('recoil', 'DE', 'Germany', 1905, 9), ready: true },
+  { kind: 'pending' },
+  { kind: 'empty' },
+];
+
+export const queueInfo = { online: 3248, inQueue: 186 };
+
+export const gameModes = ['5v5 Ranked', '5v5 Unranked', '2v2 Wingman'];
+
+const chat: ChatMessage[] = [
+  { id: 1, time: '20:14', text: 'Server is ready. All players must connect within 5 minutes.' },
+  { id: 2, time: '20:15', author: 'miko', text: 'gl hf everyone' },
+];
+
+export const match: MatchInfo = {
+  id: '482193',
+  title: 'Team vex vs Team s1lent',
+  subtitle: 'Match #482193 · 5v5 Ranked · Europe · 13 Oct 2026, 20:14',
+  status: 'WARMUP',
+  joinBefore: '20:19',
+  server: { location: 'Frankfurt, DE', ping: 24, ip: '185.225.74.32:27015' },
+  teams: [
+    {
+      name: 'Team vex',
+      avgElo: 1828,
+      players: [
+        { player: currentPlayer, kd: 1.24, winRate: 56, connected: true, captain: true, isYou: true },
+        { player: p('miko', 'FI', 'Finland', 1796, 8), kd: 1.18, winRate: 54, connected: true },
+        { player: p('recoil', 'DE', 'Germany', 1905, 9), kd: 1.31, winRate: 58, connected: true },
+        { player: p('n0va', 'DK', 'Denmark', 1731, 8), kd: 1.09, winRate: 52, connected: true },
+        { player: p('kaze', 'NL', 'Netherlands', 1866, 8), kd: 1.21, winRate: 55, connected: true },
+      ],
+    },
+    {
+      name: 'Team s1lent',
+      avgElo: 1828,
+      players: [
+        { player: p('s1lent', 'PL', 'Poland', 1889, 8), kd: 1.26, winRate: 57, connected: true, captain: true },
+        { player: p('flint', 'GB', 'United Kingdom', 1812, 8), kd: 1.16, winRate: 54, connected: true },
+        { player: p('dusk', 'DE', 'Germany', 1754, 8), kd: 1.12, winRate: 53, connected: true },
+        { player: p('frost', 'SE', 'Sweden', 1923, 9), kd: 1.29, winRate: 58, connected: true },
+        { player: p('ryze', 'FI', 'Finland', 1762, 8), kd: 1.14, winRate: 52, connected: true },
+      ],
+    },
+  ],
+  map: { title: 'Inferno', file: 'de_inferno · Best of 1' },
+  details: [
+    { label: 'Format', value: 'MR12 · Overtime enabled' },
+    { label: 'Server', value: 'Frankfurt, Germany' },
+    { label: 'Team balance', value: '1,828 / 1,828 ELO' },
+    { label: 'Rating at stake', value: '±25 ELO' },
+    { label: 'Players connected', value: '10 / 10', accent: true },
+  ],
+  veto: [
+    { map: 'Mirage', status: 'banned', by: 'vex' },
+    { map: 'Nuke', status: 'banned', by: 's1lent' },
+    { map: 'Dust II', status: 'banned', by: 'vex' },
+    { map: 'Ancient', status: 'banned', by: 's1lent' },
+    { map: 'Anubis', status: 'banned', by: 'vex' },
+    { map: 'Train', status: 'banned', by: 's1lent' },
+    { map: 'Inferno', status: 'selected' },
+  ],
+  chat,
+};
+</file>
+
+<file path="src/layouts/AuthLayout.tsx">
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { Link as RouterLink, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import Footer from '../components/Footer';
+import Logo from '../components/Logo';
+import PageContainer from '../components/PageContainer';
+import { colors } from '../theme';
+
+/** Layout for /login and /register: centred logo, a contextual CTA on the right, footer. */
+export default function AuthLayout() {
+  const { user } = useAuth();
+  const { pathname, state } = useLocation();
+  const from = (state as { from?: string } | null)?.from;
+  if (user) return <Navigate to={from ?? '/play'} replace />;
+
+  const isRegister = pathname.startsWith('/register');
+  const cta = isRegister
+    ? { text: 'Already a player?', label: 'Log in', to: '/login' }
+    : { text: 'New to matchmaking?', label: 'Create account', to: '/register' };
+
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box component="header" sx={{ height: 64, bgcolor: colors.header }}>
+        <PageContainer sx={{ height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <Box sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <Logo />
+          </Box>
+          <Typography variant="body2" color="text.disabled" sx={{ mr: 1.5, display: { xs: 'none', sm: 'block' } }}>
+            {cta.text}
+          </Typography>
+          <Button component={RouterLink} to={cta.to} variant="outlined" size="small">
+            {cta.label}
+          </Button>
+        </PageContainer>
+      </Box>
+
+      <Box component="main" sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6, px: 2 }}>
+        <Outlet />
+      </Box>
+
+      <Footer />
+    </Box>
+  );
+}
+</file>
+
+<file path="src/layouts/MainLayout.tsx">
+import NotificationsNone from '@mui/icons-material/NotificationsNone';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { NavLink, Outlet } from 'react-router-dom';
+import Footer from '../components/Footer';
+import Logo from '../components/Logo';
+import PageContainer from '../components/PageContainer';
+import UserMenu from '../components/UserMenu';
+import { queueInfo } from '../data/mock';
+import { colors } from '../theme';
+
+const nav = [
+  { label: 'Play', to: '/play' },
+  { label: 'Matches', to: '/matches' },
+  { label: 'Rankings', to: '/rankings' },
+  { label: 'Players', to: '/players' },
+];
+
+const fmt = new Intl.NumberFormat('en-US');
+
+/** Main app shell: top navigation, live status bar, content slot and footer. */
+export default function MainLayout() {
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box component="header" sx={{ bgcolor: colors.header }}>
+        <PageContainer sx={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Stack direction="row" alignItems="center" spacing={5} sx={{ height: '100%' }}>
+            <Logo withIcon to="/play" />
+            <Stack component="nav" direction="row" spacing={3.5} sx={{ height: '100%' }} aria-label="Main">
+              {nav.map((item) => (
+                <Box
+                  key={item.to}
+                  component={NavLink}
+                  to={item.to}
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    textDecoration: 'none',
+                    '&:hover': { color: 'text.primary' },
+                    '&.active': { color: 'text.primary' },
+                    '&.active::after': {
+                      content: '""',
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 2,
+                      bgcolor: 'primary.main',
+                    },
+                  }}
+                >
+                  {item.label}
+                </Box>
+              ))}
+            </Stack>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <IconButton size="small" aria-label="Notifications" sx={{ color: 'text.secondary' }}>
+              <NotificationsNone fontSize="small" />
+            </IconButton>
+            <UserMenu />
+          </Stack>
+        </PageContainer>
+      </Box>
+
+      <Box sx={{ borderTop: 1, borderBottom: 1, borderColor: 'divider', bgcolor: colors.page }}>
+        <PageContainer sx={{ height: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography sx={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'text.disabled' }}>
+            Counter-Strike 2 / Europe
+          </Typography>
+          <Stack direction="row" spacing={2.5} alignItems="center" sx={{ fontSize: 12, color: 'text.secondary' }}>
+            <span>{fmt.format(queueInfo.online)} online</span>
+            <span>{queueInfo.inQueue} in queue</span>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: 'success.main' }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+              <span>All systems operational</span>
+            </Stack>
+          </Stack>
+        </PageContainer>
+      </Box>
+
+      <Box component="main" sx={{ flex: 1 }}>
+        <PageContainer sx={{ pb: 5 }}>
+          <Outlet />
+        </PageContainer>
+      </Box>
+
+      <Footer />
+    </Box>
+  );
+}
+</file>
+
+<file path="src/layouts/PlayLayout.tsx">
+import Box from '@mui/material/Box';
+import { Outlet } from 'react-router-dom';
+import Footer from '../components/Footer';
+import Logo from '../components/Logo';
+import PageContainer from '../components/PageContainer';
+import UserMenu from '../components/UserMenu';
+import { colors } from '../theme';
+
+/** Minimal app shell for the matchmaking lobby: centred logo + user menu, no navigation. */
+export default function PlayLayout() {
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box component="header" sx={{ height: 64, bgcolor: colors.header }}>
+        <PageContainer sx={{ height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <Box sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <Logo to="/play" />
+          </Box>
+          <UserMenu />
+        </PageContainer>
+      </Box>
+
+      <Box component="main" sx={{ flex: 1 }}>
+        <PageContainer sx={{ py: 3 }}>
+          <Outlet />
+        </PageContainer>
+      </Box>
+
+      <Footer />
+    </Box>
+  );
+}
+</file>
+
+<file path="src/pages/ComingSoonPage.tsx">
+import Box from '@mui/material/Box';
+import PageHeader from '../components/PageHeader';
+
+export default function ComingSoonPage({ title }: { title: string }) {
+  return (
+    <>
+      <PageHeader crumbs={['Stack', title]} title={title} />
+      <Box sx={{ py: 10, textAlign: 'center', color: 'text.disabled', border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+        This section is not built yet.
+      </Box>
+    </>
+  );
+}
+</file>
+
+<file path="src/pages/ErrorPage.tsx">
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { Link as RouterLink, isRouteErrorResponse, useRouteError } from 'react-router-dom';
+import { paths } from '../router/paths';
+
+/** Shown when a route throws or a lazy chunk fails to load. */
+export default function ErrorPage() {
+  const error = useRouteError();
+  const message = isRouteErrorResponse(error)
+    ? `${error.status} ${error.statusText}`
+    : error instanceof Error
+      ? error.message
+      : 'Unknown error';
+
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', textAlign: 'center', p: 3 }}>
+      <Box>
+        <Typography variant="h1" sx={{ mb: 1 }}>
+          Something went wrong
+        </Typography>
+        <Typography color="text.disabled" sx={{ mb: 3 }}>
+          {message}
+        </Typography>
+        <Button component={RouterLink} to={paths.play} variant="contained">
+          Go to matchmaking
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/pages/LoginPage.tsx">
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { useState, type FormEvent } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import AuthCard from '../components/AuthCard';
+import Field from '../components/Field';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const next: typeof errors = {};
+    if (!EMAIL_RE.test(email)) next.email = 'Enter a valid email address.';
+    if (!password) next.password = 'Enter your password.';
+    setErrors(next);
+    if (Object.keys(next).length) return;
+
+    setSubmitting(true);
+    try {
+      await login(email, password, remember);
+      navigate('/play', { replace: true });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AuthCard
+      tab="login"
+      footer={
+        <>
+          Don't have an account?{' '}
+          <Link component={RouterLink} to="/register" fontWeight={500}>
+            Create account
+          </Link>
+        </>
+      }
+      note={
+        <>
+          Trouble logging in? <Link component={RouterLink} to="/support" color="inherit">Contact support</Link>
+        </>
+      }
+    >
+      <Box component="form" onSubmit={onSubmit} noValidate>
+        <Typography variant="h2" component="h1" sx={{ mb: 0.5 }}>
+          Welcome back
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Log in to join your party and find a match.
+        </Typography>
+
+        <Field label="Email address" type="email" value={email} onChange={setEmail} placeholder="Enter your email" error={errors.email} autoComplete="email" autoFocus />
+        <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="Enter your password" error={errors.password} autoComplete="current-password" />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+          <FormControlLabel
+            control={<Checkbox size="small" checked={remember} onChange={(e) => setRemember(e.target.checked)} />}
+            label="Remember me"
+            slotProps={{ typography: { sx: { fontSize: 12, color: 'text.secondary' } } }}
+          />
+          <Link component={RouterLink} to="/forgot-password" sx={{ fontSize: 12 }}>
+            Forgot password?
+          </Link>
+        </Box>
+
+        <Button type="submit" variant="contained" size="large" fullWidth disabled={submitting}>
+          Log in
+        </Button>
+      </Box>
+    </AuthCard>
+  );
+}
+</file>
+
+<file path="src/pages/MatchesPage.tsx">
+import Link from '@mui/material/Link';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { Link as RouterLink } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
+import Panel from '../components/Panel';
+import { denseTableSx } from '../components/tableSx';
+import { matchHistory } from '../data/mock';
+import { colors } from '../theme';
+
+export default function MatchesPage() {
+  return (
+    <>
+      <PageHeader crumbs={['Stack', 'Matches']} title="Matches" subtitle="Counter-Strike 2 · Season 04" />
+      <Panel title="Recent matches">
+        <Table size="small" sx={denseTableSx}>
+          <TableHead>
+            <TableRow>
+              {['Match', 'Date', 'Map', 'Result', 'Score', 'ELO'].map((h) => (
+                <TableCell key={h}>{h}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {matchHistory.map((m) => (
+              <TableRow key={m.id} hover>
+                <TableCell>
+                  <Link component={RouterLink} to={`/matches/${m.id}`}>
+                    #{m.id}
+                  </Link>
+                </TableCell>
+                <TableCell>{m.date}</TableCell>
+                <TableCell>{m.map}</TableCell>
+                <TableCell sx={{ color: m.result === 'W' ? 'success.main' : colors.danger, fontWeight: 600 }}>{m.result}</TableCell>
+                <TableCell>{m.score}</TableCell>
+                <TableCell sx={{ color: m.eloDelta > 0 ? 'success.main' : colors.danger }}>
+                  {m.eloDelta > 0 ? '+' : '−'}
+                  {Math.abs(m.eloDelta)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Panel>
+    </>
+  );
+}
+</file>
+
+<file path="src/pages/MatchPage.tsx">
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import MapOutlined from '@mui/icons-material/MapOutlined';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import Check from '@mui/icons-material/Check';
+import GppGoodOutlined from '@mui/icons-material/GppGoodOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Snackbar from '@mui/material/Snackbar';
+import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import KeyValueList from '../components/KeyValueList';
+import PageHeader from '../components/PageHeader';
+import Panel from '../components/Panel';
+import PlayerAvatar from '../components/PlayerAvatar';
+import StatusBadge from '../components/StatusBadge';
+import { denseTableSx } from '../components/tableSx';
+import { match } from '../data/mock';
+import type { ChatMessage, MatchInfo } from '../types';
+import { colors } from '../theme';
+
+const fmt = new Intl.NumberFormat('en-US');
+const nowHHMM = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+export default function MatchPage() {
+  // TODO: load by `useParams().id`; the mock only has one match.
+  const m: MatchInfo = match;
+  const { user } = useAuth();
+  const [toast, setToast] = useState<string | null>(null);
+
+  const copy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setToast(`${label} copied`);
+    } catch {
+      setToast('Could not copy to clipboard');
+    }
+  };
+
+  const connectCmd = `connect ${m.server.ip}`;
+
+  return (
+    <>
+      <PageHeader
+        crumbs={['Stack', 'Matches', `#${m.id}`]}
+        title={m.title}
+        subtitle={m.subtitle}
+        action={<StatusBadge label={m.status} />}
+      />
+
+      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(0,1fr) 296px' }, alignItems: 'start' }}>
+        {/* Main column */}
+        <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
+          <Panel title="Server ready" caption={`Join before ${m.joinBefore}`}>
+            <Box sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
+                <Box>
+                  <Typography sx={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.disabled' }}>
+                    Server IP · {m.server.location} · {m.server.ping} ms
+                  </Typography>
+                  <Typography sx={{ fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace', fontSize: 22, fontWeight: 500, letterSpacing: '0.04em', mt: 1 }}>
+                    {m.server.ip}
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" startIcon={<ContentCopy fontSize="small" />} onClick={() => copy(m.server.ip, 'Server IP')}>
+                    Copy IP
+                  </Button>
+                  <Button variant="contained" startIcon={<OpenInNew fontSize="small" />} href={`steam://connect/${m.server.ip}`}>
+                    Connect to server
+                  </Button>
+                </Stack>
+              </Box>
+
+              <Box
+                sx={{
+                  mt: 2,
+                  px: 1.5,
+                  height: 36,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  bgcolor: colors.page,
+                  border: 1,
+                  borderColor: 'divider',
+                  fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+                  fontSize: 12,
+                }}
+              >
+                {connectCmd}
+                <IconButton size="small" aria-label="Copy connect command" onClick={() => copy(connectCmd, 'Command')} sx={{ color: 'text.secondary' }}>
+                  <ContentCopy sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Box>
+              <Typography variant="caption" sx={{ display: 'block', mt: 1.5 }}>
+                Open CS2, then connect using the button or paste the command into your console.
+              </Typography>
+            </Box>
+          </Panel>
+
+          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
+            {m.teams.map((team) => {
+              const connected = team.players.filter((p) => p.connected).length;
+              return (
+                <Panel key={team.name} title={team.name} caption={`Ø ${fmt.format(team.avgElo)} ELO`} sx={{ minWidth: 0 }}>
+                  <Table size="small" sx={{ ...denseTableSx, '& .MuiTableCell-root': { px: 1.5 } }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Player</TableCell>
+                        <TableCell>ELO</TableCell>
+                        <TableCell>K/D</TableCell>
+                        <TableCell>Win %</TableCell>
+                        <TableCell align="center">
+                          <GppGoodOutlined sx={{ fontSize: 14, verticalAlign: 'middle' }} titleAccess="Anti-cheat verified" />
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {team.players.map((p) => {
+                        const isYou = p.isYou || p.player.name === user?.player.name;
+                        return (
+                          <TableRow key={p.player.name} sx={{ bgcolor: isYou ? colors.selected : undefined }}>
+                            <TableCell>
+                              <Stack direction="row" spacing={1.25} alignItems="center">
+                                <PlayerAvatar initials={p.player.initials} size={28} />
+                                <Box>
+                                  <Link component={RouterLink} to={`/players/${p.player.name}`} color="inherit" underline="hover" sx={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3, display: 'block' }}>
+                                    {p.player.name}
+                                    {isYou && ' (you)'}
+                                  </Link>
+                                  <Typography sx={{ fontSize: 11, color: 'text.disabled', lineHeight: 1.3 }}>
+                                    {p.player.countryCode} · Level {p.player.level}
+                                    {p.captain && ' · Captain'}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </TableCell>
+                            <TableCell>{fmt.format(p.player.elo)}</TableCell>
+                            <TableCell>{p.kd.toFixed(2)}</TableCell>
+                            <TableCell>{p.winRate}%</TableCell>
+                            <TableCell align="center">
+                              {p.connected && <Check sx={{ fontSize: 16, color: 'success.main' }} titleAccess="Connected" />}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <Typography variant="caption" sx={{ display: 'block', px: 1.75, py: 1.25, borderTop: 1, borderColor: 'divider' }}>
+                    {connected} / {team.players.length} players connected · Anti-cheat verified
+                  </Typography>
+                </Panel>
+              );
+            })}
+          </Box>
+
+          <MatchChat initial={m.chat} author={user?.player.name ?? 'you'} />
+        </Box>
+
+        {/* Side column */}
+        <Box sx={{ display: 'grid', gap: 3 }}>
+          <Panel title="Match details">
+            <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+              <MapOutlined sx={{ color: 'primary.main', fontSize: 28 }} />
+              <Box>
+                <Typography sx={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>{m.map.title}</Typography>
+                <Typography variant="caption">{m.map.file}</Typography>
+              </Box>
+            </Box>
+            <KeyValueList
+              items={m.details.map((d) => ({
+                label: d.label,
+                value: d.accent ? <Box component="span" sx={{ color: 'primary.main' }}>{d.value}</Box> : d.value,
+              }))}
+            />
+          </Panel>
+
+          <Panel title="Map veto" caption="Completed">
+            <Box>
+              {m.veto.map((v) => {
+                const selected = v.status === 'selected';
+                return (
+                  <Box
+                    key={v.map}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      px: 2,
+                      height: 34,
+                      alignItems: 'center',
+                      fontSize: 13,
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      '&:last-of-type': { borderBottom: 0 },
+                      bgcolor: selected ? colors.selected : undefined,
+                      fontWeight: selected ? 600 : 400,
+                    }}
+                  >
+                    <span>{v.map}</span>
+                    <Box component="span" sx={{ fontSize: 12, fontWeight: 400, color: selected ? 'primary.main' : 'text.disabled' }}>
+                      {selected ? 'Selected' : `Banned · ${v.by}`}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Panel>
+
+          <Panel title="Need help?">
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                Connection issues? Check your anti-cheat and restart CS2 before contacting support.
+              </Typography>
+              <Button component={RouterLink} to="/support" variant="outlined" fullWidth>
+                Contact support
+              </Button>
+              <Link component={RouterLink} to="/report" sx={{ display: 'inline-block', mt: 1.5, fontSize: 12 }}>
+                Report a player →
+              </Link>
+            </Box>
+          </Panel>
+        </Box>
+      </Box>
+
+      <Snackbar open={toast !== null} autoHideDuration={2000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
+    </>
+  );
+}
+
+function MatchChat({ initial, author }: { initial: ChatMessage[]; author: string }) {
+  const [scope, setScope] = useState<'team' | 'all'>('team');
+  const [messages, setMessages] = useState(initial);
+  const [text, setText] = useState('');
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [messages]);
+
+  const send = (e: FormEvent) => {
+    e.preventDefault();
+    const value = text.trim();
+    if (!value) return;
+    setMessages((prev) => [...prev, { id: prev.length + 1, time: nowHHMM(), author, text: value }]);
+    setText('');
+  };
+
+  const tab = (key: 'team' | 'all', label: string) => (
+    <Box
+      component="button"
+      type="button"
+      onClick={() => setScope(key)}
+      sx={{ all: 'unset', cursor: 'pointer', color: scope === key ? 'text.primary' : 'text.disabled', fontSize: 12 }}
+    >
+      {label}
+    </Box>
+  );
+
+  return (
+    <Panel
+      title="Match chat"
+      caption={
+        <Stack direction="row" spacing={1}>
+          {tab('team', 'Team chat')}
+          <span>/</span>
+          {tab('all', 'All chat')}
+        </Stack>
+      }
+    >
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ minHeight: 64, maxHeight: 220, overflowY: 'auto', mb: 2, display: 'grid', rowGap: 1, alignContent: 'start' }} aria-live="polite">
+          {messages.map((msg) => (
+            <Box key={msg.id} sx={{ display: 'flex', gap: 1.5, fontSize: 13 }}>
+              <Box sx={{ color: 'text.disabled', width: 36, flexShrink: 0 }}>{msg.time}</Box>
+              {msg.author && <Box sx={{ color: 'primary.main', fontWeight: 600 }}>{msg.author}</Box>}
+              <Box sx={{ color: msg.author ? 'text.primary' : 'text.secondary' }}>{msg.text}</Box>
+            </Box>
+          ))}
+          <div ref={endRef} />
+        </Box>
+        <Box component="form" onSubmit={send} sx={{ display: 'flex', gap: 1 }}>
+          <OutlinedInput
+            fullWidth
+            size="small"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={scope === 'team' ? 'Message your team…' : 'Message everyone…'}
+            inputProps={{ 'aria-label': 'Chat message' }}
+          />
+          <Button type="submit" variant="outlined" sx={{ minWidth: 72 }}>
+            Send
+          </Button>
+        </Box>
+      </Box>
+    </Panel>
+  );
+}
+</file>
+
+<file path="src/pages/NotFoundPage.tsx">
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { Link as RouterLink } from 'react-router-dom';
+
+export default function NotFoundPage() {
+  return (
+    <Box sx={{ py: 12, textAlign: 'center' }}>
+      <Typography variant="h1" sx={{ mb: 1 }}>
+        Page not found
+      </Typography>
+      <Typography color="text.disabled" sx={{ mb: 3 }}>
+        The page you are looking for does not exist.
+      </Typography>
+      <Button component={RouterLink} to="/play" variant="contained">
+        Go to matchmaking
+      </Button>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/pages/PlayPage.tsx">
+import Close from '@mui/icons-material/Close';
+import EmojiEventsOutlined from '@mui/icons-material/EmojiEventsOutlined';
+import LinkIcon from '@mui/icons-material/LinkOutlined';
+import PersonAddAlt from '@mui/icons-material/PersonAddAltOutlined';
+import Search from '@mui/icons-material/Search';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Snackbar from '@mui/material/Snackbar';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../auth/AuthContext';
+import Field from '../components/Field';
+import Panel from '../components/Panel';
+import PlayerAvatar from '../components/PlayerAvatar';
+import { gameModes, initialParty, playerSummary, queueInfo } from '../data/mock';
+import type { PartySlot } from '../types';
+import { colors } from '../theme';
+
+const fmt = new Intl.NumberFormat('en-US');
+const PARTY_SIZE = 5;
+const LEVEL_STEP = 100; // mock: one level per 100 ELO
+
+const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+export default function PlayPage() {
+  const { user } = useAuth();
+  const me = user!.player;
+
+  const [mode, setMode] = useState(gameModes[0]);
+  const [party, setParty] = useState<PartySlot[]>(() =>
+    initialParty.map((s) => (s.kind === 'player' && s.leader ? { ...s, player: me } : s)),
+  );
+  const [searching, setSearching] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!searching) return;
+    setElapsed(0);
+    const id = window.setInterval(() => setElapsed((t) => t + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [searching]);
+
+  const members = party.filter((s): s is Extract<PartySlot, { kind: 'player' }> => s.kind === 'player');
+  const partyRating = useMemo(
+    () => (members.length ? Math.round(members.reduce((sum, m) => sum + m.player.elo, 0) / members.length) : 0),
+    [members],
+  );
+  const toNext = LEVEL_STEP - (me.elo % LEVEL_STEP);
+  const progress = ((me.elo % LEVEL_STEP) / LEVEL_STEP) * 100;
+
+  const clearSlot = (i: number) => setParty((p) => p.map((s, idx) => (idx === i ? { kind: 'empty' as const } : s)));
+
+  const addInvite = () => {
+    const name = inviteName.trim();
+    if (!name) return;
+    setParty((p) => {
+      const idx = p.findIndex((s) => s.kind === 'empty');
+      return idx === -1 ? p : p.map((s, i) => (i === idx ? { kind: 'pending' as const } : s));
+    });
+    setToast(`Invite sent to ${name}`);
+    setInviteName('');
+    setInviteOpen(false);
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/play?party=${encodeURIComponent(me.name)}`);
+      setToast('Invite link copied');
+    } catch {
+      setToast('Could not copy the link');
+    }
+  };
+
+  const hasEmpty = party.some((s) => s.kind === 'empty');
+
+  return (
+    <Panel title="Find a match" centerTitle caption="Counter-Strike:Source">
+      {/* Player summary */}
+      <Box sx={{ p: 2.5 }}>
+        <Stack direction="row" alignItems="center" spacing={2.5} flexWrap="wrap" useFlexGap>
+          <PlayerAvatar initials={me.initials} size={40} />
+          <Box sx={{ minWidth: 150 }}>
+            <Typography sx={{ fontWeight: 600 }}>{me.name}</Typography>
+            <Typography variant="caption">
+              {me.country} · Member since 2023
+            </Typography>
+          </Box>
+
+          <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
+            {fmt.format(me.elo)}{' '}
+            <Typography component="span" sx={{ fontSize: 12, color: 'text.disabled', fontWeight: 500 }}>
+              ELO
+            </Typography>
+          </Typography>
+
+          <Box sx={{ px: 1, py: 0.5, bgcolor: colors.selected, color: 'primary.main', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em' }}>
+            LEVEL {me.level}
+          </Box>
+
+          <Stat label="Matches played" value={playerSummary.matches} />
+          <Stat label="Win rate" value={`${playerSummary.winRate}%`} />
+          <Box>
+            <Typography variant="caption">Last 5</Typography>
+            <Stack direction="row" spacing={1} sx={{ fontSize: 12, fontWeight: 600 }}>
+              {playerSummary.last5.map((r, i) => (
+                <span key={i}>{r}</span>
+              ))}
+            </Stack>
+          </Box>
+        </Stack>
+
+        <LinearProgress variant="determinate" value={progress} sx={{ mt: 2.5 }} aria-label="Progress to next level" />
+        <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+          {toNext} ELO to level {me.level + 1}
+        </Typography>
+      </Box>
+
+      <Divider />
+
+      {/* Game mode */}
+      <Box sx={{ p: 2.5 }}>
+        <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+          Game mode
+        </Typography>
+        <Select
+          fullWidth
+          size="small"
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+          disabled={searching}
+          sx={{ bgcolor: colors.page, fontSize: 13, fontWeight: 500, '& .MuiOutlinedInput-notchedOutline': { borderColor: colors.border } }}
+          inputProps={{ 'aria-label': 'Game mode' }}
+        >
+          {gameModes.map((m) => (
+            <MenuItem key={m} value={m}>
+              {m}
+            </MenuItem>
+          ))}
+        </Select>
+      </Box>
+
+      <Divider />
+
+      {/* Party */}
+      <Box sx={{ p: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Typography sx={{ fontWeight: 600 }}>Your party</Typography>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="caption" sx={{ mr: 1 }}>
+              {members.length} / {PARTY_SIZE} players
+            </Typography>
+            <Button variant="outlined" size="small" startIcon={<LinkIcon fontSize="small" />} onClick={copyLink}>
+              Copy invite link
+            </Button>
+            <Button variant="outlined" size="small" startIcon={<PersonAddAlt fontSize="small" />} onClick={() => setInviteOpen(true)} disabled={!hasEmpty || searching}>
+              Invite player
+            </Button>
+          </Stack>
+        </Box>
+
+        <Box sx={{ border: 1, borderColor: 'divider' }}>
+          {party.map((slot, i) => (
+            <PartyRow key={i} slot={slot} isYou={slot.kind === 'player' && slot.leader === true} onClear={() => clearSlot(i)} disabled={searching} last={i === party.length - 1} />
+          ))}
+        </Box>
+
+        <Box sx={{ textAlign: 'center', mt: 2.5 }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Search />}
+            onClick={() => setSearching((s) => !s)}
+            sx={{ minWidth: 254 }}
+          >
+            {searching ? `Searching… ${mmss(elapsed)} · Cancel` : 'Search match'}
+          </Button>
+          <Typography variant="caption" sx={{ display: 'block', mt: 1.5 }}>
+            {queueInfo.inQueue} players in queue · Party rating: {fmt.format(partyRating)} ELO
+          </Typography>
+        </Box>
+      </Box>
+
+      <Dialog open={inviteOpen} onClose={() => setInviteOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle>Invite player</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <Field label="Player name" value={inviteName} onChange={setInviteName} placeholder="Enter a player name" autoFocus />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="outlined" onClick={() => setInviteOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={addInvite} disabled={!inviteName.trim()}>
+            Send invite
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={toast !== null} autoHideDuration={2500} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
+    </Panel>
+  );
+}
+
+function Divider() {
+  return <Box sx={{ mx: 2.5, borderTop: 1, borderColor: 'divider' }} />;
+}
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <Box>
+      <Typography variant="caption">{label}</Typography>
+      <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{value}</Typography>
+    </Box>
+  );
+}
+
+interface RowProps {
+  slot: PartySlot;
+  isYou: boolean;
+  last: boolean;
+  disabled: boolean;
+  onClear: () => void;
+}
+
+function PartyRow({ slot, isYou, last, disabled, onClear }: RowProps) {
+  const base = {
+    display: 'grid',
+    gridTemplateColumns: '40px minmax(120px,170px) 60px 130px 1fr 32px',
+    alignItems: 'center',
+    columnGap: 1.5,
+    height: 46,
+    px: 1.5,
+    fontSize: 13,
+    borderBottom: last ? 0 : `1px solid ${colors.border}`,
+    bgcolor: isYou ? colors.selected : 'transparent',
+  } as const;
+
+  if (slot.kind === 'player') {
+    const { player, ready, leader } = slot;
+    return (
+      <Box sx={base}>
+        <PlayerAvatar initials={player.initials} size={28} />
+        <Typography sx={{ fontWeight: 600, fontSize: 13 }}>
+          {player.name}
+          {leader && ' (you)'}
+        </Typography>
+        <Box sx={{ color: 'text.disabled', fontSize: 11 }}>{player.countryCode}</Box>
+        <Box sx={{ color: 'text.secondary' }}>{fmt.format(player.elo)} ELO</Box>
+        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ color: ready ? 'success.main' : 'text.disabled', fontSize: 12 }}>
+          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'currentColor' }} />
+          <span>{ready ? 'Ready' : 'Not ready'}</span>
+        </Stack>
+        {leader ? (
+          <EmojiEventsOutlined fontSize="small" sx={{ color: 'text.secondary' }} titleAccess="Party leader" />
+        ) : (
+          <IconButton size="small" aria-label={`Remove ${player.name}`} onClick={onClear} disabled={disabled} sx={{ color: 'text.disabled' }}>
+            <Close fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+    );
+  }
+
+  const pending = slot.kind === 'pending';
+  return (
+    <Box sx={{ ...base, color: 'text.disabled' }}>
+      <PlayerAvatar initials={pending ? '?' : '+'} size={28} sx={{ color: 'text.disabled' }} />
+      <Typography sx={{ fontSize: 13, color: 'inherit' }}>{pending ? 'Waiting for player' : 'Empty slot'}</Typography>
+      <Box>—</Box>
+      <Box>—</Box>
+      <Box sx={{ fontSize: 12 }}>{pending ? 'Wait for player' : 'Invite player'}</Box>
+      <IconButton size="small" aria-label="Clear slot" onClick={onClear} disabled={disabled || !pending} sx={{ color: 'text.disabled', visibility: pending ? 'visible' : 'hidden' }}>
+        <Close fontSize="small" />
+      </IconButton>
+    </Box>
+  );
+}
+</file>
+
+<file path="src/pages/ProfilePage.tsx">
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+import Tab from '@mui/material/Tab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import KeyValueList from '../components/KeyValueList';
+import PageHeader from '../components/PageHeader';
+import Panel from '../components/Panel';
+import PlayerAvatar from '../components/PlayerAvatar';
+import RatingChart from '../components/RatingChart';
+import StatusBadge from '../components/StatusBadge';
+import { denseTableSx } from '../components/tableSx';
+import { currentPlayer, initialParty, mapStats, matchHistory, playerSummary, ratingHistory } from '../data/mock';
+import { colors } from '../theme';
+
+const fmt = new Intl.NumberFormat('en-US');
+const TABS = ['Overview', 'Matches', 'Statistics', 'Teammates'] as const;
+
+export default function ProfilePage() {
+  const { name = currentPlayer.name } = useParams();
+  const [tab, setTab] = useState<(typeof TABS)[number]>('Overview');
+
+  // Mock data only exists for the current player.
+  const player = { ...currentPlayer, name };
+  const s = playerSummary;
+  const partyMates = initialParty.flatMap((slot) => (slot.kind === 'player' && !slot.leader ? [slot.player.name] : []));
+
+  return (
+    <>
+      <PageHeader
+        crumbs={['Stack', 'Players', name]}
+        title="Player profile"
+        subtitle="Counter-Strike 2 · Season 04"
+        action={
+          <Button variant="outlined" size="small" startIcon={<SettingsOutlined fontSize="small" />} component={RouterLink} to="/settings">
+            Edit profile
+          </Button>
+        }
+      />
+
+      {/* Hero */}
+      <Box sx={{ border: 1, borderColor: 'divider', bgcolor: 'background.paper', p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <PlayerAvatar initials={player.initials} size={64} sx={{ fontSize: 26 }} />
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.2 }}>{player.name}</Typography>
+              {s.online && <StatusBadge label="ONLINE" />}
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {s.realName} · {player.country} · Member since {s.memberSince}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.75, color: 'text.secondary', fontSize: 12 }}>
+              <VerifiedUserOutlined sx={{ fontSize: 14, color: 'success.main' }} />
+              Steam verified · Anti-cheat enabled
+            </Box>
+          </Box>
+        </Box>
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography sx={{ fontSize: 32, fontWeight: 600, lineHeight: 1.2 }}>{fmt.format(player.elo)} ELO</Typography>
+          <Typography variant="caption">
+            Level {player.level} · #{fmt.format(s.rank)} in {s.region}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Tabs */}
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mt: 3, borderBottom: 1, borderColor: 'divider' }}>
+        {TABS.map((t) => (
+          <Tab key={t} value={t} label={t} disableRipple sx={{ minWidth: 0, mr: 2, px: 0, fontSize: 13 }} />
+        ))}
+      </Tabs>
+
+      {tab !== 'Overview' ? (
+        <Box sx={{ py: 8, textAlign: 'center', color: 'text.disabled' }}>{tab} will appear here.</Box>
+      ) : (
+        <Box sx={{ mt: 3, display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(0,1fr) 296px' }, alignItems: 'start' }}>
+          {/* Main column */}
+          <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+              {[
+                { value: String(s.matches), label: 'Matches played' },
+                { value: `${s.winRate}%`, label: 'Win rate' },
+                { value: s.avgKd.toFixed(2), label: 'Average K/D' },
+                { value: s.avgKills.toFixed(1), label: 'Average kills' },
+              ].map((c, i) => (
+                <Box key={c.label} sx={{ p: 2, borderLeft: i === 0 ? 0 : 1, borderColor: 'divider' }}>
+                  <Typography sx={{ fontSize: 24, fontWeight: 500 }}>{c.value}</Typography>
+                  <Typography variant="caption">{c.label}</Typography>
+                </Box>
+              ))}
+            </Box>
+
+            <Panel title="Rating history" caption="Last 30 days">
+              <Box sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, mb: 1 }}>
+                  <Box sx={{ color: 'text.disabled' }}>ELO rating</Box>
+                  <Box sx={{ color: 'success.main', fontWeight: 600 }}>+{s.eloThisMonth} ELO this month</Box>
+                </Box>
+                <RatingChart values={ratingHistory.values} labels={ratingHistory.labels} />
+              </Box>
+            </Panel>
+
+            <Panel
+              title="Match history"
+              caption={
+                <Link component={RouterLink} to="/matches" color="inherit" underline="hover">
+                  View all matches →
+                </Link>
+              }
+            >
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="small" sx={denseTableSx}>
+                  <TableHead>
+                    <TableRow>
+                      {['Date', 'Map', 'Result', 'Score', 'K / D / A', 'ELO'].map((h) => (
+                        <TableCell key={h}>{h}</TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {matchHistory.map((m) => {
+                      const win = m.result === 'W';
+                      return (
+                        <TableRow key={m.id} hover>
+                          <TableCell>
+                            <Link component={RouterLink} to={`/matches/${m.id}`} color="inherit" underline="hover">
+                              {m.date}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{m.map}</TableCell>
+                          <TableCell sx={{ color: win ? 'success.main' : colors.danger, fontWeight: 600 }}>{m.result}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{m.score}</TableCell>
+                          <TableCell>{m.kda}</TableCell>
+                          <TableCell sx={{ color: win ? 'success.main' : colors.danger }}>
+                            {m.eloDelta > 0 ? '+' : '−'}
+                            {Math.abs(m.eloDelta)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Panel>
+          </Box>
+
+          {/* Side column */}
+          <Box sx={{ display: 'grid', gap: 3 }}>
+            <Panel title="Player details">
+              <KeyValueList
+                items={[
+                  { label: 'Country', value: player.country },
+                  { label: 'Joined', value: s.joined },
+                  { label: 'Last played', value: s.lastPlayed },
+                  { label: 'Preferred region', value: s.region },
+                  {
+                    label: 'Steam account',
+                    value: (
+                      <Link href={s.steamUrl} target="_blank" rel="noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        {s.steamName} <OpenInNew sx={{ fontSize: 12 }} />
+                      </Link>
+                    ),
+                  },
+                  { label: 'Account status', value: s.status },
+                ]}
+              />
+            </Panel>
+
+            <Panel title="Map statistics" caption="Last 50 matches">
+              <Table size="small" sx={denseTableSx}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Map</TableCell>
+                    <TableCell align="right">Played / Win rate</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {mapStats.map((m) => (
+                    <TableRow key={m.map}>
+                      <TableCell sx={{ fontWeight: 600 }}>{m.map}</TableCell>
+                      <TableCell align="right">
+                        <Box component="span" sx={{ color: 'text.disabled', mr: 3 }}>
+                          {m.played}
+                        </Box>
+                        {m.winRate}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Panel>
+
+            <Panel title="Current party" caption={`${1 + partyMates.length} / 5`}>
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                  Playing with {partyMates.join(' and ')}
+                </Typography>
+                <Button component={RouterLink} to="/play" variant="outlined" fullWidth>
+                  Go to matchmaking
+                </Button>
+              </Box>
+            </Panel>
+          </Box>
+        </Box>
+      )}
+    </>
+  );
+}
+</file>
+
+<file path="src/pages/RegisterPage.tsx">
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { useState, type FormEvent } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import AuthCard from '../components/AuthCard';
+import Field from '../components/Field';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NAME_RE = /^\w{3,20}$/;
+
+type Errors = Partial<Record<'name' | 'email' | 'password' | 'confirm' | 'agree', string>>;
+
+export default function RegisterPage() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const next: Errors = {};
+    if (!NAME_RE.test(name)) next.name = '3–20 characters. Letters, numbers and underscores.';
+    if (!EMAIL_RE.test(email)) next.email = 'Enter a valid email address.';
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password))
+      next.password = 'Use at least 8 characters, including a letter and a number.';
+    if (confirm !== password) next.confirm = 'Passwords do not match.';
+    if (!agree) next.agree = 'You must accept the Terms of Service and Privacy Policy.';
+    setErrors(next);
+    if (Object.keys(next).length) return;
+
+    setSubmitting(true);
+    try {
+      await register(name, email, password);
+      navigate('/play', { replace: true });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AuthCard
+      tab="register"
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link component={RouterLink} to="/login" fontWeight={500}>
+            Log in
+          </Link>
+        </>
+      }
+      note="We'll send a verification link to your email."
+    >
+      <Box component="form" onSubmit={onSubmit} noValidate>
+        <Typography variant="h2" component="h1" sx={{ mb: 0.5 }}>
+          Create your account
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Set up your player profile and get ready to compete.
+        </Typography>
+
+        <Field label="Player name" value={name} onChange={setName} placeholder="Choose your player name" helperText="3–20 characters. Letters, numbers and underscores." error={errors.name} autoComplete="username" autoFocus />
+        <Field label="Email address" type="email" value={email} onChange={setEmail} placeholder="Enter your email" error={errors.email} autoComplete="email" />
+        <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="Create a password" helperText="Use at least 8 characters, including a letter and a number." error={errors.password} autoComplete="new-password" />
+        <Field label="Confirm password" type="password" value={confirm} onChange={setConfirm} placeholder="Re-enter your password" error={errors.confirm} autoComplete="new-password" />
+
+        <Box sx={{ mb: 2.5 }}>
+          <FormControlLabel
+            control={<Checkbox size="small" checked={agree} onChange={(e) => setAgree(e.target.checked)} />}
+            label={
+              <>
+                I agree to the <Link component={RouterLink} to="/terms">Terms of Service</Link> and{' '}
+                <Link component={RouterLink} to="/privacy">Privacy Policy</Link>.
+              </>
+            }
+            slotProps={{ typography: { sx: { fontSize: 12, color: 'text.secondary' } } }}
+          />
+          {errors.agree && <FormHelperText error sx={{ mx: 0, fontSize: 12 }}>{errors.agree}</FormHelperText>}
+        </Box>
+
+        <Button type="submit" variant="contained" size="large" fullWidth disabled={submitting}>
+          Create account
+        </Button>
+      </Box>
+    </AuthCard>
+  );
+}
+</file>
+
+<file path="src/router/paths.ts">
+/** Single source of truth for URLs – use these instead of string literals. */
+export const paths = {
+  root: '/',
+  login: '/login',
+  register: '/register',
+  play: '/play',
+  matches: '/matches',
+  match: (id: string | number = ':id') => `/matches/${id}`,
+  rankings: '/rankings',
+  players: '/players',
+  player: (name: string = ':name') => `/players/${name}`,
+  settings: '/settings',
+} as const;
+</file>
+
+<file path="src/router/router.tsx">
+import { Navigate, createBrowserRouter, type RouteObject } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import RequireAuth from '../auth/RequireAuth';
+import AuthLayout from '../layouts/AuthLayout';
+import MainLayout from '../layouts/MainLayout';
+import PlayLayout from '../layouts/PlayLayout';
+import ErrorPage from '../pages/ErrorPage';
+import { paths } from './paths';
+
+/** Code-split a page: `lazy(() => import('../pages/X'))` – pages are default exports. */
+const page = (load: () => Promise<{ default: React.ComponentType }>) => ({
+  lazy: async () => ({ Component: (await load()).default }),
+});
+
+/** /players -> /players/<current user> */
+function MyProfileRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={paths.player(user?.player.name ?? '')} replace />;
+}
+
+const routes: RouteObject[] = [
+  {
+    errorElement: <ErrorPage />,
+    children: [
+      { path: paths.root, element: <Navigate to={paths.play} replace /> },
+
+      // Public: log in / create account (AuthLayout redirects away if already logged in)
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: paths.login, ...page(() => import('../pages/LoginPage')) },
+          { path: paths.register, ...page(() => import('../pages/RegisterPage')) },
+        ],
+      },
+
+      // Private
+      {
+        element: <RequireAuth />,
+        children: [
+          // Lobby – minimal header
+          {
+            element: <PlayLayout />,
+            children: [{ path: paths.play, ...page(() => import('../pages/PlayPage')) }],
+          },
+          // Main app – navigation + status bar
+          {
+            element: <MainLayout />,
+            children: [
+              { path: paths.matches, ...page(() => import('../pages/MatchesPage')) },
+              { path: paths.match(), ...page(() => import('../pages/MatchPage')) },
+              { path: paths.players, element: <MyProfileRedirect /> },
+              { path: paths.player(), ...page(() => import('../pages/ProfilePage')) },
+              {
+                path: paths.rankings,
+                lazy: async () => {
+                  const { default: ComingSoonPage } = await import('../pages/ComingSoonPage');
+                  return { element: <ComingSoonPage title="Rankings" /> };
+                },
+              },
+              {
+                path: paths.settings,
+                lazy: async () => {
+                  const { default: ComingSoonPage } = await import('../pages/ComingSoonPage');
+                  return { element: <ComingSoonPage title="Settings" /> };
+                },
+              },
+              { path: '*', ...page(() => import('../pages/NotFoundPage')) },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(routes);
+</file>
+
+<file path="src/router/routerr.tsx">
+import { createBrowserRouter } from 'react-router-dom'
+import App from '../App'
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+  },
+])
+</file>
+
+<file path="src/App.css">
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+</file>
+
+<file path="src/App.tsx">
+// src/App.tsx
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router/router';
+import { AuthProvider } from './auth/AuthContext';
+
+function App() {
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
+}
+
+export default App
+</file>
+
+<file path="src/index.css">
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+</file>
+
+<file path="src/main.tsx">
+// src/main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App'
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import theme from './theme'
+import { AuthProvider } from './auth/AuthContext'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ThemeProvider>
+  </StrictMode>,
+)
+</file>
+
+<file path="src/theme.ts">
+import { createTheme } from '@mui/material/styles';
+/** Design tokens taken from the Figma exports. */
+export const colors = {
+  page: '#0F1720',
+  header: '#0B1118',
+  panel: '#111827',
+  border: '#1F2937',
+  selected: '#0F2A3D',
+  text: '#E2E8F0',
+  textSecondary: '#94A3B8',
+  muted: '#64748B',
+  primary: '#60A5FA',
+  success: '#34D399',
+  danger: '#A25B5B',
+} as const;
+
+export const PAGE_MAX_WIDTH = 1232; // 1184 content + 2 * 24 gutter
+
+export const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: colors.primary, contrastText: '#FFFFFF' },
+    success: { main: colors.success },
+    error: { main: colors.danger },
+    background: { default: colors.page, paper: colors.panel },
+    text: { primary: colors.text, secondary: colors.textSecondary, disabled: colors.muted },
+    divider: colors.border,
+  },
+  shape: { borderRadius: 2 },
+  typography: {
+    fontFamily: '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+    fontSize: 14,
+    h1: { fontSize: 24, fontWeight: 600, letterSpacing: '-0.01em' },
+    h2: { fontSize: 20, fontWeight: 600 },
+    h3: { fontSize: 14, fontWeight: 600 },
+    body1: { fontSize: 14 },
+    body2: { fontSize: 13 },
+    caption: { fontSize: 12, color: colors.muted },
+    button: { textTransform: 'none', fontWeight: 600 },
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: { backgroundColor: colors.page },
+        a: { color: 'inherit' },
+      },
+    },
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: { borderRadius: 2, minHeight: 32 },
+        sizeLarge: { minHeight: 44, fontSize: 14 },
+        outlined: {
+          color: colors.text,
+          borderColor: '#334155',
+          '&:hover': { borderColor: colors.textSecondary, backgroundColor: 'rgba(148,163,184,0.06)' },
+        },
+        containedPrimary: { color: '#fff' },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: colors.page,
+          borderRadius: 2,
+          '& .MuiOutlinedInput-notchedOutline': { borderColor: colors.border },
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colors.muted },
+        },
+        input: { padding: '12px 12px', fontSize: 13, '&::placeholder': { color: colors.muted, opacity: 1 } },
+      },
+    },
+    MuiTab: {
+      styleOverrides: { root: { minHeight: 44, fontWeight: 500, color: colors.muted } },
+    },
+    MuiTabs: {
+      styleOverrides: { root: { minHeight: 44 } },
+    },
+    MuiLink: {
+      defaultProps: { underline: 'hover' },
+    },
+    MuiCheckbox: {
+      styleOverrides: { root: { color: colors.border, padding: 4 } },
+    },
+    MuiLinearProgress: {
+      styleOverrides: { root: { height: 3, borderRadius: 0, backgroundColor: colors.border } },
+    },
+    MuiPaper: {
+      styleOverrides: { root: { backgroundImage: 'none' } },
+    },
+  },
+});
+
+export default theme;
+</file>
+
+<file path="src/types.ts">
+export interface Player {
+  name: string;
+  initials: string;
+  countryCode: string;
+  country: string;
+  elo: number;
+  level: number;
+}
+
+export type PartySlot =
+  | { kind: 'player'; player: Player; ready: boolean; leader?: boolean }
+  | { kind: 'pending' }
+  | { kind: 'empty' };
+
+export interface MatchHistoryRow {
+  id: string;
+  date: string;
+  map: string;
+  result: 'W' | 'L';
+  score: string;
+  kda: string;
+  eloDelta: number;
+}
+
+export interface MapStat {
+  map: string;
+  played: number;
+  winRate: number;
+}
+
+export interface MatchPlayer {
+  player: Player;
+  kd: number;
+  winRate: number;
+  connected: boolean;
+  captain?: boolean;
+  isYou?: boolean;
+}
+
+export interface VetoStep {
+  map: string;
+  status: 'banned' | 'selected';
+  by?: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  time: string;
+  author?: string;
+  text: string;
+}
+
+export interface MatchInfo {
+  id: string;
+  title: string;
+  subtitle: string;
+  status: 'WARMUP' | 'LIVE' | 'FINISHED';
+  joinBefore: string;
+  server: { location: string; ping: number; ip: string };
+  teams: { name: string; avgElo: number; players: MatchPlayer[] }[];
+  map: { title: string; file: string };
+  details: { label: string; value: string; accent?: boolean }[];
+  veto: VetoStep[];
+  chat: ChatMessage[];
+}
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path=".oxlintrc.json">
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>css_matchmaking_frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="package.json">
+{
+  "name": "css_matchmaking_frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.5.0",
+    "@mui/material": "^9.5.0",
+    "mui": "^0.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
+  }
+}
+</file>
+
+<file path="README.md">
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
+```
+
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+</file>
+
+<file path="tsconfig.app.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+</file>
+
+<file path="tsconfig.node.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "module": "nodenext",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}
+</file>
+
+<file path="vite.config.ts">
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+</file>
+
+</files>
