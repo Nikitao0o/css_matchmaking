@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
@@ -7,6 +7,8 @@ from srcds.rcon import RconConnection
 from matchmaking import start_match, end_match, build_connect_command
 from fastapi_steam import SteamAuth, SteamUser
 from rcon import send_rcon_command, RCON_HOST, RCON_PORT, RCON_PASSWORD
+from typing import List
+import asyncio, json
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -16,53 +18,7 @@ steam = SteamAuth(
     redirect_uri=os.getenv("STEAM_REDIRECT_URI", "http://localhost:8000/auth/callback"),
 )
 
-def apply_match_config(map_name: str, game_mode: str, bot_quota: int) -> dict:
-    """Configure the server with one connection to avoid IP bans from rapid reconnects."""
-    results = {}
-    try:
-        conn = RconConnection(RCON_HOST, port=RCON_PORT, password=RCON_PASSWORD)
-        try:
-            results["bot_quota"] = str(conn.exec_command(f"bot_quota {bot_quota}"))
-            results["bot_quota_mode"] = str(conn.exec_command("bot_quota_mode fill"))
-
-            mode_cfg = {"1v1": "1v1.cfg", "5v5": "5v5.cfg"}.get(game_mode, "default.cfg")
-            results["mode"] = str(conn.exec_command(f"exec {mode_cfg}"))
-
-            conn.exec_command(f"changelevel {map_name}")
-            results["map"] = f"changelevel {map_name} issued"
-        finally:
-            conn.close()
-    except Exception as e:
-        results["error"] = f"RCON Error: {e}"
-    return results
-
-
-def handle_control_command(command: str, args: dict) -> str:
-    """Map control commands to RCON commands."""
-    if command == "start_match":
-        map_name = args.get("map", "de_dust2")
-        if not all(c.isalnum() or c == "_" for c in map_name):
-            return "Invalid map name"
-        return send_rcon_command(f"changelevel {map_name}")
-
-    elif command == "restart_game":
-        return send_rcon_command("mp_restartgame 1")
-
-    elif command == "restart_round":
-        return send_rcon_command("sv_restart 1")
-
-    elif command == "end_warmup":
-        return send_rcon_command("mp_warmup_end")
-
-    elif command == "custom":
-        cmd = args.get("cmd", "")
-        allowed = ("mp_", "sv_", "sm_", "changelevel", "status")
-        if not cmd.startswith(allowed):
-            return "Command not allowed"
-        return send_rcon_command(cmd)
-
-    else:
-        return f"Unknown control command: {command}"
+waiting_players: List[dict] = []
 
 
 # ---------- Sourcemod reporting ----------
@@ -71,15 +27,6 @@ def handle_control_command(command: str, args: dict) -> str:
 async def report_match_data(report: MatchReport):
     # No WebSocket broadcast anymore; just log or persist as needed.
     return {"ok": True, "roomId": report.roomId, "event": report.event}
-
-
-# ---------- Control signals ----------
-
-@app.post("/api/control")
-async def send_control(signal: ControlSignal):
-    response = handle_control_command(signal.command, signal.payload or {})
-    return {"ok": True, "command": signal.command, "response": response}
-
 
 # ---------- Debug ----------
 
@@ -278,3 +225,60 @@ def get_room(room_id: int, db: Session = Depends(get_db)):
         "bot_quota": room.bot_quota,
         "players": [{"id": p.id, "username": p.username} for p in room.players],
     }
+
+#---------------------- Matchmaking queue -----------------------------
+
+@app.websocket("/ws/matchmaking")
+async def matchmaking_ws(websocket: WebSocket, user_id: int):
+    await websocket.accept()
+    player = {"user_id": user_id, "ws": websocket}
+    waiting_players.append(player)
+
+    # Notify the player they are in queue
+    await websocket.send_text(json.dumps({
+        "type": "queued",
+        "position": len(waiting_players)
+    }))
+
+    # If two players are waiting, start a match
+    if len(waiting_players) >= 2:
+        p1 = waiting_players.pop(0)
+        p2 = waiting_players.pop(0)
+        
+        # Create room in DB (reuse your existing logic)
+        from database import SessionLocal
+        from models import MatchRoom, User
+        db = SessionLocal()
+        room = MatchRoom(status="ready", game_mode="1v1", map_name="de_dust2", bot_quota=2)
+        db.add(room)
+        db.commit()
+        db.refresh(room)
+
+        u1 = db.query(User).filter(User.id == p1["user_id"]).first()
+        u2 = db.query(User).filter(User.id == p2["user_id"]).first()
+        u1.current_room_id = room.id
+        u2.current_room_id = room.id
+        db.commit()
+
+        # Configure the game server
+        from rcon import apply_match_config
+        apply_match_config("de_dust2", "1v1", 2)
+
+        # Send connect command to both
+        connect_cmd = f"connect 172.29.197.196:27015"
+        for p in [p1, p2]:
+            await p["ws"].send_text(json.dumps({
+                "type": "match_ready",
+                "room_id": room.id,
+                "connect": connect_cmd,
+                "map": "de_dust2"
+            }))
+        db.close()
+
+    try:
+        # Keep the connection open so players receive broadcasts
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        if player in waiting_players:
+            waiting_players.remove(player)

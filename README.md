@@ -15,12 +15,6 @@ Open PowerShell or Command Prompt on Windows and go to your project folder:
 cd C:\path\to\match-backend
 ```
 
-Create your configuration file:
-
-```bash
-copy .env.example .env
-```
-
 Open `.env` in a text editor and fill in:
 
 - `POSTGRES_PASSWORD` - any password you choose for the database
@@ -34,9 +28,9 @@ To find your WSL2 IP, open Ubuntu and type:
 hostname -I
 ```
 
-Use the first number it prints, for example `172.24.160.1`.
+Use the first IP it prints, for example `172.24.160.1`.
 
-Now start the backend:
+Start the backend:
 
 ```bash
 docker compose up --build -d
@@ -45,10 +39,10 @@ docker compose up --build -d
 Check it works by opening this in your browser:
 
 ```
-http://localhost:8000/healthcheck
+http://localhost:8000/docs
 ```
 
-You should see the short "OK" message.
+You should see the swagger page.
 
 ## Game Server Setup
 
@@ -75,7 +69,7 @@ docker exec -it css-server nano /app/cstrike/cfg/server.cfg
 Add this line at the bottom (use the same password you put in `.env` on backends):
 
 ```
-rcon_password "your_password_here"
+rcon_password "your_rcon_password"
 ```
 
 Save the file (Ctrl+O, Enter, Ctrl+X) and restart the server:
@@ -98,9 +92,9 @@ Type this to connect to your server, using your WSL2 IP:
 connect <your WSL2 IP>:27015
 ```
 
-The server should load and you should join the game.
+You should join the game on the server.
 
-Note: typing `connect localhost:27015` is not recognised by the game's parses and will not work. You must use the WSL2 IP address.
+Note: typing `connect localhost:27015` is not recognised by the game's parser and will not work. You must use the WSL2 IP address.
 
 
 ## Stopping Everything
