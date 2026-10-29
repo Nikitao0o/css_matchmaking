@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+websockets
+sqlalchemy>=2.0
+psycopg[binary]
+pysrcds
+pydantic
+email-validator
+fastapi-steam[fastapi]
