@@ -53,11 +53,11 @@ class MatchRoom(Base):
     game_mode = Column(String, default="1v1")
     map_name = Column(String, default="de_dust2")
     bot_quota = Column(Integer, default=0)
-    server_ip = Column(String, nullable=True)
-    server_port = Column(Integer, default=27015)
+    game_server_id = Column(Integer, ForeignKey("game_servers.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     players = relationship("User", back_populates="current_room")
+    game_server = relationship("GameServer", foreign_keys=[game_server_id])
 
 class MatchResult(Base):
     __tablename__ = "match_results"

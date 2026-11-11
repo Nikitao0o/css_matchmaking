@@ -40,16 +40,18 @@ def find_match(db: Session, game_mode: str = "1v1") -> dict | None:
 
 
 def _create_match(db: Session, e1: QueueEntry, e2: QueueEntry, game_mode: str) -> dict:
-    # Find an available server
     server = db.query(GameServer).filter(GameServer.status == "available").first()
     if not server:
         return {"error": "No available game server"}
+    if not server.ip:
+        return {"error": f"Game server {server.id} has no IP configured"}
 
     room = MatchRoom(
         status="ready",
         game_mode=game_mode,
         map_name=e1.preferred_maps.split(",")[0] if e1.preferred_maps else "de_dust2",
         bot_quota=0,
+        game_server_id=server.id,
     )
     db.add(room)
     db.commit()
@@ -65,18 +67,20 @@ def _create_match(db: Session, e1: QueueEntry, e2: QueueEntry, game_mode: str) -
     u2.current_room_id = room.id
     db.commit()
 
-    # Remove from queue
     db.delete(e1)
     db.delete(e2)
     db.commit()
 
-    # Configure game server
-    apply_match_config(room.map_name, game_mode, 0)
+    apply_match_config(server, room.map_name, game_mode, 0)
 
     return {
         "room_id": room.id,
-        "server_ip": room.server_ip,
-        "server_port": room.server_port,
-        "connect": f"connect {room.server_ip}:{room.server_port}",
+        "server": {
+            "id": server.id,
+            "name": server.name,
+            "ip": server.ip,
+            "port": server.port,
+        },
+        "connect": f"connect {server.ip}:{server.port}",
         "players": [u1.id, u2.id],
     }

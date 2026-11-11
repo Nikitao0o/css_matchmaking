@@ -1,18 +1,16 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
-from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom, GameServer, QueueEntry
+from models import MatchReport, MatchRoom, GameServer, QueueEntry
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
-from srcds.rcon import RconConnection
-from matchmaking import start_match, end_match, build_connect_command
 from fastapi_steam import SteamAuth, SteamUser
-from rcon import send_rcon_command, RCON_HOST, RCON_PORT, RCON_PASSWORD
 from typing import List
 import asyncio, json, datetime
 from pydantic import BaseModel
 from typing import Optional
 from starlette.middleware.sessions import SessionMiddleware
 from datetime import datetime
+from rcon import send_rcon_command, apply_match_config
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -36,46 +34,6 @@ waiting_players: List[dict] = []
 async def report_match_data(report: MatchReport):
     # No WebSocket broadcast anymore; just log or persist as needed.
     return {"ok": True, "roomId": report.roomId, "event": report.event}
-
-# ---------- Debug ----------
-
-@app.get("/api/rooms")
-async def list_rooms():
-    # manager.rooms is no longer used for WebSockets; return DB-backed info instead.
-    return {"note": "WebSocket rooms removed; use /rooms/{id}"}
-
-
-# ---------- Match lifecycle (HTTP) ----------
-
-@app.post("/rooms/{room_id}/start")
-async def start_match_endpoint(
-    room_id: int,
-    map_name: str = "de_dust2",
-    game_mode: str = "1v1",
-    bot_quota: int = 0,
-    db: Session = Depends(get_db),
-):
-    result = await start_match(
-        db=db,
-        room_id=room_id,
-        map_name=map_name,
-        game_mode=game_mode,
-        bot_quota=bot_quota,
-    )
-    # Optionally apply RCON config here:
-    # rcon_results = apply_match_config(map_name, game_mode, bot_quota)
-    return {"ok": True, "result": result}
-
-
-@app.post("/rooms/{room_id}/end")
-async def end_match_endpoint(room_id: int, db: Session = Depends(get_db)):
-    result = await end_match(db, room_id)
-    return {"ok": True, "result": result}
-
-
-@app.get("/rooms/{room_id}/connect")
-async def connect_command(room_id: int):
-    return {"connect": build_connect_command()}
 
 
 # ---------- Auth ----------
@@ -292,74 +250,22 @@ def get_room(room_id: int, db: Session = Depends(get_db)):
     if not room:
         raise HTTPException(404, "Room not found")
 
+    server = room.game_server
     return {
         "id": room.id,
         "status": room.status,
         "game_mode": room.game_mode,
         "map_name": room.map_name,
         "bot_quota": room.bot_quota,
-        "server_ip": room.server_ip,
-        "server_port": room.server_port,
+        "server": {
+            "id": server.id,
+            "name": server.name,
+            "ip": server.ip,
+            "port": server.port,
+        } if server else None,
+        "connect": f"connect {server.ip}:{server.port}" if server else None,
         "players": [{"id": p.id, "username": p.username} for p in room.players],
     }
-
-#---------------------- Matchmaking queue -----------------------------
-
-@app.websocket("/ws/matchmaking")
-async def matchmaking_ws(websocket: WebSocket, user_id: int):
-    await websocket.accept()
-    player = {"user_id": user_id, "ws": websocket}
-    waiting_players.append(player)
-
-    # Notify the player they are in queue
-    await websocket.send_text(json.dumps({
-        "type": "queued",
-        "position": len(waiting_players)
-    }))
-
-    # If two players are waiting, start a match
-    if len(waiting_players) >= 2:
-        p1 = waiting_players.pop(0)
-        p2 = waiting_players.pop(0)
-        
-        # Create room in DB (reuse your existing logic)
-        from database import SessionLocal
-        from models import MatchRoom, User
-        db = SessionLocal()
-        room = MatchRoom(status="ready", game_mode="1v1", map_name="de_dust2", bot_quota=2)
-        db.add(room)
-        db.commit()
-        db.refresh(room)
-
-        u1 = db.query(User).filter(User.id == p1["user_id"]).first()
-        u2 = db.query(User).filter(User.id == p2["user_id"]).first()
-        u1.current_room_id = room.id
-        u2.current_room_id = room.id
-        db.commit()
-
-        # Configure the game server
-        from rcon import apply_match_config
-        apply_match_config("de_dust2", "1v1", 2)
-
-        # Send connect command to both
-        connect_cmd = f"connect 172.29.197.196:27015"
-        for p in [p1, p2]:
-            await p["ws"].send_text(json.dumps({
-                "type": "match_ready",
-                "room_id": room.id,
-                "connect": connect_cmd,
-                "map": "de_dust2"
-            }))
-        db.close()
-
-    try:
-        # Keep the connection open so players receive broadcasts
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        if player in waiting_players:
-            waiting_players.remove(player)
-
 
 @app.get("/servers")
 def list_servers(db: Session = Depends(get_db)):
@@ -368,6 +274,9 @@ def list_servers(db: Session = Depends(get_db)):
         {
             "id": s.id,
             "name": s.name,
+            "ip":s.ip,
+            "port":s.port,
+            "rcon pwd":s.rcon_password,
             "region": s.region,
             "status": s.status,
             "players": 0,  # populated later via A2S query
@@ -493,4 +402,66 @@ def dev_reset_state(db: Session = Depends(get_db)):
         "queue_cleared": queue_cleared,
         "rooms_cleared": rooms_cleared,
         "servers_freed": servers_freed,
+    }
+
+    # ---------- Match lifecycle ----------
+
+@app.post("/rooms/{room_id}/end")
+def end_match_endpoint(room_id: int, db: Session = Depends(get_db)):
+    room = db.query(MatchRoom).filter(MatchRoom.id == room_id).first()
+    if not room:
+        raise HTTPException(404, "Room not found")
+
+    room.status = "finished"
+    for player in room.players:
+        player.current_room_id = None
+
+    if room.game_server:
+        send_rcon_command(room.game_server, "bot_kick")
+        send_rcon_command(room.game_server, "changelevel de_dust2")
+        room.game_server.status = "available"
+        room.game_server.current_room_id = None
+
+    db.commit()
+    return {"status": "finished"}
+
+
+@app.get("/rooms/{room_id}/connect")
+def connect_command(room_id: int, db: Session = Depends(get_db)):
+    room = db.query(MatchRoom).filter(MatchRoom.id == room_id).first()
+    if not room or not room.game_server:
+        raise HTTPException(404, "Room or server not ready")
+    server = room.game_server
+    return {
+        "connect": f"connect {server.ip}:{server.port}",
+        "steam_link": f"steam://connect/{server.ip}:{server.port}",
+    }
+
+
+@app.post("/rooms/{room_id}/start")
+def start_match_endpoint(
+    room_id: int,
+    map_name: str = "de_dust2",
+    game_mode: str = "1v1",
+    bot_quota: int = 0,
+    db: Session = Depends(get_db),
+):
+    room = db.query(MatchRoom).filter(MatchRoom.id == room_id).first()
+    if not room:
+        raise HTTPException(404, "Room not found")
+    if not room.game_server:
+        raise HTTPException(400, "Room has no assigned game server")
+
+    room.map_name = map_name
+    room.game_mode = game_mode
+    room.bot_quota = bot_quota
+    room.status = "in_progress"
+    db.commit()
+
+    rcon_results = apply_match_config(room.game_server, map_name, game_mode, bot_quota)
+    server = room.game_server
+    return {
+        "status": "started",
+        "connect": f"connect {server.ip}:{server.port}",
+        "rcon": rcon_results,
     }
