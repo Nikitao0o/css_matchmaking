@@ -4,7 +4,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { colors } from '../theme';
+import { colors } from '@/theme';
 
 interface Props {
   tab: 'login' | 'register';

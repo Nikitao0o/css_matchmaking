@@ -8,10 +8,10 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import AuthCard from '../components/AuthCard';
-import Field from '../components/Field';
-import { paths } from '../router/paths';
+import { useAuth } from '@/auth/AuthContext';
+import AuthCard from '@/components/AuthCard';
+import Field from '@/components/Field';
+import { paths } from '@/router/paths';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_RE = /^\w{3,20}$/;

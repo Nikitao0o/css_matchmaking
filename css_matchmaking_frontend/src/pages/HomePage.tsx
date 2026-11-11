@@ -11,9 +11,9 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { paths } from '../router/paths';
-import { colors } from '../theme';
+import { useAuth } from '@/auth/AuthContext';
+import { paths } from '@/router/paths';
+import { colors } from '@/theme';
 
 interface FeatureItem {
   icon: React.ReactNode;

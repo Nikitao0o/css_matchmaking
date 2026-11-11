@@ -10,10 +10,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { paths } from '../router/paths';
-import { colors } from '../theme';
-import PlayerAvatar from './PlayerAvatar';
+import { useAuth } from '@/auth/AuthContext';
+import { paths } from '@/router/paths';
+import { colors } from '@/theme';
+import PlayerAvatar from '@/components/PlayerAvatar';
 
 const fmt = new Intl.NumberFormat('en-US');
 

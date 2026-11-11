@@ -8,12 +8,12 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import AuthCard from '../components/AuthCard';
-import Field from '../components/Field';
-import PlayerAvatar from '../components/PlayerAvatar';
-import { paths } from '../router/paths';
-import { colors } from '../theme';
+import { useAuth } from '@/auth/AuthContext';
+import AuthCard from '@/components/AuthCard';
+import Field from '@/components/Field';
+import PlayerAvatar from '@/components/PlayerAvatar';
+import { paths } from '@/router/paths';
+import { colors } from '@/theme';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

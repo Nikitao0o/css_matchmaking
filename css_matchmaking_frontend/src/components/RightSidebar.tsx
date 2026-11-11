@@ -10,9 +10,9 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { paths } from '../router/paths';
-import { colors } from '../theme';
+import { useAuth } from '@/auth/AuthContext';
+import { paths } from '@/router/paths';
+import { colors } from '@/theme';
 
 const fmt = new Intl.NumberFormat('en-US');
 

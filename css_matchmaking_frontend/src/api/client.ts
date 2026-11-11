@@ -1,12 +1,11 @@
-/**
- * Базовый клиент для отправки HTTP-запросов к бэкенду.
- */
-
-// Кастомный класс ошибки, чтобы мы могли видеть статус ответа (400, 404, 500 и т.д.)
+// custom class for errors, so we can see the response status (400, 404, 500 etc.)
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  public status: number;
+
+  constructor(status: number, message: string) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
   }
 }
 

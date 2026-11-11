@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from '@mui/material/styles';
-import { colors } from '../theme';
+import { colors } from '@/theme';
 
 /** Shared dense-table look used by match history, team rosters and map stats. */
 export const denseTableSx: SxProps<Theme> = {

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { Player } from '../types';
+import type { Player } from '@/types';
 
 export interface AuthUser {
   email: string;

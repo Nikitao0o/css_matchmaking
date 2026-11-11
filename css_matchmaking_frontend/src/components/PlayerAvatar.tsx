@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { colors } from '../theme';
+import { colors } from '@/theme';
 
 interface Props {
   initials: string;

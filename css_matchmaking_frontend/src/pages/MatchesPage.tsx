@@ -5,11 +5,11 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Link as RouterLink } from 'react-router-dom';
-import PageHeader from '../components/PageHeader';
-import Panel from '../components/Panel';
-import { denseTableSx } from '../components/tableSx';
-import { matchHistory } from '../data/mock';
-import { colors } from '../theme';
+import PageHeader from '@/components/PageHeader';
+import Panel from '@/components/Panel';
+import { denseTableSx } from '@/components/tableSx';
+import { matchHistory } from '@/data/mock';
+import { colors } from '@/theme';
 
 export default function MatchesPage() {
   return (

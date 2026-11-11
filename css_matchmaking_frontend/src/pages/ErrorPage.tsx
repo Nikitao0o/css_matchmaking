@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink, isRouteErrorResponse, useRouteError } from 'react-router-dom';
-import { paths } from '../router/paths';
+import { paths } from '@/router/paths';
 
 /** Shown when a route throws or a lazy chunk fails to load. */
 export default function ErrorPage() {

@@ -2,7 +2,7 @@ import CrisisAlertIcon from '@mui/icons-material/CrisisAlert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
-import { colors } from '../theme';
+import { colors } from '@/theme';
 
 export default function Logo({ withIcon = false, to = '/' }: { withIcon?: boolean; to?: string }) {
   return (

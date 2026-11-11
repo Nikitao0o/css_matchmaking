@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box';
 import { Outlet } from 'react-router-dom';
-import Footer from '../components/Footer';
-import LeftSidebar from '../components/LeftSidebar';
-import PageContainer from '../components/PageContainer';
-import RightSidebar from '../components/RightSidebar';
+import Footer from '@/components/Footer';
+import LeftSidebar from '@/components/LeftSidebar';
+import PageContainer from '@/components/PageContainer';
+import RightSidebar from '@/components/RightSidebar';
 
 /** Master shell for the entire website: left sliding panel, center content, right profile/elo panel. */
 export default function MainLayout() {

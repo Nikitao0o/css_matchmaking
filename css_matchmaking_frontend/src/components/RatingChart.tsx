@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { colors } from '../theme';
+import { colors } from '@/theme';
 
 interface Props {
   values: number[];

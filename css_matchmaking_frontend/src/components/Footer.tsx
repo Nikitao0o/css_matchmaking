@@ -3,7 +3,7 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
-import PageContainer from './PageContainer';
+import PageContainer from '@/components/PageContainer';
 
 const links = [
   { label: 'Rules', to: '/rules' },

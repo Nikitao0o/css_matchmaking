@@ -12,8 +12,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { NavLink, Link as RouterLink } from 'react-router-dom';
-import { paths } from '../router/paths';
-import { colors } from '../theme';
+import { paths } from '@/router/paths';
+import { colors } from '@/theme';
 
 interface NavItem {
   label: string;

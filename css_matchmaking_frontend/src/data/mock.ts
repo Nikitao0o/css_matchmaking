@@ -1,4 +1,4 @@
-import type { ChatMessage, MapStat, MatchHistoryRow, MatchInfo, PartySlot, Player } from '../types';
+import type { ChatMessage, MapStat, MatchHistoryRow, MatchInfo, PartySlot, Player } from '@/types';
 
 const p = (name: string, countryCode: string, country: string, elo: number, level: number): Player => ({
   name,

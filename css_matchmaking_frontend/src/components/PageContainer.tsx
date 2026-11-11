@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
-import { PAGE_MAX_WIDTH } from '../theme';
+import { PAGE_MAX_WIDTH } from '@/theme';
 
 export default function PageContainer({ children, sx }: { children: ReactNode; sx?: SxProps<Theme> }) {
   return (
