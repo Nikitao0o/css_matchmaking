@@ -3,6 +3,7 @@ import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Link from '@mui/material/Link';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
@@ -12,8 +13,9 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
+import { fetchProfile, type UserProfileResponse } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import KeyValueList from '@/components/KeyValueList';
 import PageHeader from '@/components/PageHeader';
@@ -28,24 +30,64 @@ import { colors } from '@/theme';
 const fmt = new Intl.NumberFormat('en-US');
 const TABS = ['Overview', 'Matches', 'Statistics', 'Teammates'] as const;
 
+function calculateLevel(elo: number): number {
+  if (elo >= 2001) return 10;
+  if (elo >= 1851) return 9;
+  if (elo >= 1701) return 8;
+  if (elo >= 1551) return 7;
+  if (elo >= 1401) return 6;
+  if (elo >= 1251) return 5;
+  if (elo >= 1101) return 4;
+  if (elo >= 951) return 3;
+  if (elo >= 801) return 2;
+  return 1;
+}
+
 export default function ProfilePage() {
   const { user } = useAuth();
   const { name = user?.player.name ?? currentPlayer.name } = useParams();
   const [tab, setTab] = useState<(typeof TABS)[number]>('Overview');
+  const [profileData, setProfileData] = useState<UserProfileResponse | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Load player info from active user or fallback mock
-  const player = user && user.player.name.toLowerCase() === name.toLowerCase()
+  const isMe = Boolean(user && user.player.name.toLowerCase() === name.toLowerCase());
+  const player = isMe && user
     ? user.player
     : { ...currentPlayer, name, initials: name.slice(0, 2).toUpperCase() };
+
+  useEffect(() => {
+    if (!isMe || !user?.id) return;
+    setLoading(true);
+    fetchProfile(user.id)
+      .then((data) => {
+        setProfileData(data);
+      })
+      .catch((err) => {
+        console.error('Ошибка загрузки профиля с сервера:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [isMe, user?.id]);
+
   const s = playerSummary;
   const partyMates = initialParty.flatMap((slot) => (slot.kind === 'player' && !slot.leader ? [slot.player.name] : []));
+
+  // Динамические данные из базы бэкенда (или fallback на мок)
+  const currentElo = profileData?.elo ?? player.elo;
+  const currentLevel = profileData ? calculateLevel(profileData.elo) : player.level;
+  const totalMatches = profileData?.matches_played ?? s.matches;
+  const winRate = profileData
+    ? (profileData.matches_played > 0 ? Math.round((profileData.wins / profileData.matches_played) * 100) : 0)
+    : s.winRate;
 
   return (
     <>
       <PageHeader
         crumbs={['Stack', 'Players', name]}
         title="Player profile"
-        subtitle="Counter-Strike 2 · Season 04"
+        subtitle="Counter-Strike: Source Matchmaking"
         action={
           <Button variant="outlined" size="small" startIcon={<SettingsOutlined fontSize="small" />} component={RouterLink} to="/settings">
             Edit profile
@@ -60,6 +102,7 @@ export default function ProfilePage() {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Typography sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.2 }}>{player.name}</Typography>
+              {loading && <CircularProgress size={16} sx={{ color: colors.primary }} />}
               {s.online && <StatusBadge label="ONLINE" />}
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -73,25 +116,25 @@ export default function ProfilePage() {
         </Box>
         <Box sx={{ textAlign: 'right' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
-            <Typography sx={{ fontSize: 32, fontWeight: 700, lineHeight: 1.2 }}>{fmt.format(player.elo)} ELO</Typography>
+            <Typography sx={{ fontSize: 32, fontWeight: 700, lineHeight: 1.2 }}>{fmt.format(currentElo)} ELO</Typography>
             <Box
               sx={{
                 px: 1.25,
                 py: 0.35,
-                bgcolor: player.level === 10 ? '#EF4444' : colors.primary,
+                bgcolor: currentLevel === 10 ? '#EF4444' : colors.primary,
                 color: '#fff',
                 fontSize: 12,
                 fontWeight: 800,
                 borderRadius: '2px',
                 lineHeight: 1.2,
-                boxShadow: player.level === 10 ? '0 0 12px rgba(239,68,68,0.45)' : '0 0 10px rgba(255,85,0,0.3)',
+                boxShadow: currentLevel === 10 ? '0 0 12px rgba(239,68,68,0.45)' : '0 0 10px rgba(255,85,0,0.3)',
               }}
             >
-              LVL {player.level}
+              LVL {currentLevel}
             </Box>
           </Box>
           <Typography variant="caption">
-            Level {player.level} · #{fmt.format(s.rank)} in {s.region}
+            Level {currentLevel} · #{fmt.format(s.rank)} in {s.region}
           </Typography>
         </Box>
       </Box>
@@ -111,10 +154,10 @@ export default function ProfilePage() {
           <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
               {[
-                { value: String(s.matches), label: 'Matches played' },
-                { value: `${s.winRate}%`, label: 'Win rate' },
-                { value: s.avgKd.toFixed(2), label: 'Average K/D' },
-                { value: s.avgKills.toFixed(1), label: 'Average kills' },
+                { value: String(totalMatches), label: 'Matches played' },
+                { value: `${winRate}%`, label: 'Win rate' },
+                { value: profileData ? String(profileData.wins) : String(Math.round((s.matches * s.winRate) / 100)), label: 'Wins' },
+                { value: profileData ? String(profileData.losses) : String(s.matches - Math.round((s.matches * s.winRate) / 100)), label: 'Losses' },
               ].map((c, i) => (
                 <Box key={c.label} sx={{ p: 2, borderLeft: i === 0 ? 0 : 1, borderColor: 'divider' }}>
                   <Typography sx={{ fontSize: 24, fontWeight: 500 }}>{c.value}</Typography>

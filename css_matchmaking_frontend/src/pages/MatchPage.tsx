@@ -5,6 +5,7 @@ import Check from '@mui/icons-material/Check';
 import GppGoodOutlined from '@mui/icons-material/GppGoodOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -17,7 +18,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { fetchConnectCommand, fetchRoom, type RoomResponse } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import KeyValueList from '@/components/KeyValueList';
 import PageHeader from '@/components/PageHeader';
@@ -26,17 +28,59 @@ import PlayerAvatar from '@/components/PlayerAvatar';
 import StatusBadge from '@/components/StatusBadge';
 import { denseTableSx } from '@/components/tableSx';
 import { match } from '@/data/mock';
-import type { ChatMessage, MatchInfo } from '@/types';
+import type { ChatMessage, MatchPlayer } from '@/types';
 import { colors } from '@/theme';
 
 const fmt = new Intl.NumberFormat('en-US');
 const nowHHMM = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
 export default function MatchPage() {
-  // TODO: load by `useParams().id`; the mock only has one match.
-  const m: MatchInfo = match;
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [toast, setToast] = useState<string | null>(null);
+
+  const roomId = id && !isNaN(Number(id)) ? Number(id) : null;
+  const [room, setRoom] = useState<RoomResponse | null>(null);
+  const [connectCmd, setConnectCmd] = useState<string>(`connect ${match.server.ip}`);
+  const [loading, setLoading] = useState(Boolean(roomId));
+
+  // Загрузка реальных данных комнаты с бэкенда
+  useEffect(() => {
+    if (!roomId) return;
+
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        const [roomData, connectData] = await Promise.allSettled([
+          fetchRoom(roomId),
+          fetchConnectCommand(roomId),
+        ]);
+
+        if (!isMounted) return;
+
+        if (roomData.status === 'fulfilled') {
+          setRoom(roomData.value);
+        }
+        if (connectData.status === 'fulfilled' && connectData.value.connect) {
+          setConnectCmd(connectData.value.connect);
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки комнаты матча:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    // Опрашиваем состояние комнаты каждые 4 секунды, пока матч не завершится
+    const interval = window.setInterval(loadData, 4000);
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
+  }, [roomId]);
 
   const copy = async (text: string, label: string) => {
     try {
@@ -47,36 +91,93 @@ export default function MatchPage() {
     }
   };
 
-  const connectCmd = `connect ${m.server.ip}`;
+  const rawServerIp = connectCmd.replace(/^connect\s+/i, '').trim();
+  const serverIp = rawServerIp || match.server.ip;
+
+  // Динамические данные команды из бэкенда или fallback на мок
+  const currentStatus = room ? room.status.toUpperCase() : match.status;
+  const mapTitle = room ? room.map_name : match.map.title;
+  const gameMode = room ? room.game_mode : '1v1';
+
+  // Формируем команды на основе игроков из комнаты бэкенда
+  const teams = room
+    ? [
+        {
+          name: 'Team 1',
+          avgElo: 1000,
+          players: room.players.slice(0, Math.ceil(room.players.length / 2)).map(
+            (p): MatchPlayer => ({
+              player: {
+                name: p.username,
+                initials: p.username.slice(0, 2).toUpperCase(),
+                countryCode: 'RU',
+                country: 'Russia',
+                elo: 1000,
+                level: 1,
+              },
+              kd: 1.0,
+              winRate: 50,
+              connected: true,
+              isYou: p.id === user?.id,
+            }),
+          ),
+        },
+        {
+          name: 'Team 2',
+          avgElo: 1000,
+          players: room.players.slice(Math.ceil(room.players.length / 2)).map(
+            (p): MatchPlayer => ({
+              player: {
+                name: p.username,
+                initials: p.username.slice(0, 2).toUpperCase(),
+                countryCode: 'RU',
+                country: 'Russia',
+                elo: 1000,
+                level: 1,
+              },
+              kd: 1.0,
+              winRate: 50,
+              connected: true,
+              isYou: p.id === user?.id,
+            }),
+          ),
+        },
+      ]
+    : match.teams;
 
   return (
     <>
       <PageHeader
-        crumbs={['Stack', 'Matches', `#${m.id}`]}
-        title={m.title}
-        subtitle={m.subtitle}
-        action={<StatusBadge label={m.status} />}
+        crumbs={['Stack', 'Matches', `#${roomId ?? match.id}`]}
+        title={`Counter-Strike: Source · ${gameMode}`}
+        subtitle={room ? `Room #${room.id} · ${mapTitle}` : match.subtitle}
+        action={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {loading && <CircularProgress size={16} sx={{ color: colors.primary }} />}
+            <StatusBadge label={currentStatus} />
+          </Box>
+        }
       />
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(0,1fr) 296px' }, alignItems: 'start' }}>
         {/* Main column */}
         <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
-          <Panel title="Server ready" caption={`Join before ${m.joinBefore}`}>
+          <Panel title="Server ready" caption={`Join before ${match.joinBefore}`}>
             <Box sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
                 <Box>
                   <Typography sx={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.disabled' }}>
-                    Server IP · {m.server.location} · {m.server.ping} ms
+                    Server IP · {match.server.location} · {match.server.ping} ms
                   </Typography>
                   <Typography sx={{ fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace', fontSize: 22, fontWeight: 500, letterSpacing: '0.04em', mt: 1 }}>
-                    {m.server.ip}
+                    {serverIp}
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={1}>
-                  <Button variant="outlined" startIcon={<ContentCopy fontSize="small" />} onClick={() => copy(m.server.ip, 'Server IP')}>
+                  <Button variant="outlined" startIcon={<ContentCopy fontSize="small" />} onClick={() => copy(serverIp, 'Server IP')}>
                     Copy IP
                   </Button>
-                  <Button variant="contained" startIcon={<OpenInNew fontSize="small" />} href={`steam://connect/${m.server.ip}`}>
+                  <Button variant="contained" startIcon={<OpenInNew fontSize="small" />} href={`steam://connect/${serverIp}`}>
                     Connect to server
                   </Button>
                 </Stack>
@@ -103,13 +204,13 @@ export default function MatchPage() {
                 </IconButton>
               </Box>
               <Typography variant="caption" sx={{ display: 'block', mt: 1.5 }}>
-                Open CS2, then connect using the button or paste the command into your console.
+                Open Counter-Strike: Source, then connect using the button or paste the command into your console.
               </Typography>
             </Box>
           </Panel>
 
           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
-            {m.teams.map((team) => {
+            {teams.map((team) => {
               const connected = team.players.filter((p) => p.connected).length;
               return (
                 <Panel key={team.name} title={team.name} caption={`Ø ${fmt.format(team.avgElo)} ELO`} sx={{ minWidth: 0 }}>
@@ -164,7 +265,7 @@ export default function MatchPage() {
             })}
           </Box>
 
-          <MatchChat initial={m.chat} author={user?.player.name ?? 'you'} />
+          <MatchChat initial={match.chat} author={user?.player.name ?? 'you'} />
         </Box>
 
         {/* Side column */}
@@ -173,21 +274,24 @@ export default function MatchPage() {
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: 1, borderColor: 'divider' }}>
               <MapOutlined sx={{ color: 'primary.main', fontSize: 28 }} />
               <Box>
-                <Typography sx={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>{m.map.title}</Typography>
-                <Typography variant="caption">{m.map.file}</Typography>
+                <Typography sx={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>{mapTitle}</Typography>
+                <Typography variant="caption">{room ? `${room.map_name}.bsp` : match.map.file}</Typography>
               </Box>
             </Box>
             <KeyValueList
-              items={m.details.map((d) => ({
-                label: d.label,
-                value: d.accent ? <Box component="span" sx={{ color: 'primary.main' }}>{d.value}</Box> : d.value,
-              }))}
+              items={[
+                { label: 'Game', value: 'Counter-Strike: Source' },
+                { label: 'Mode', value: gameMode },
+                { label: 'Status', value: <Box component="span" sx={{ color: 'primary.main' }}>{currentStatus}</Box> },
+                { label: 'Map', value: mapTitle },
+                { label: 'Bot quota', value: String(room?.bot_quota ?? 0) },
+              ]}
             />
           </Panel>
 
           <Panel title="Map veto" caption="Completed">
             <Box>
-              {m.veto.map((v) => {
+              {match.veto.map((v) => {
                 const selected = v.status === 'selected';
                 return (
                   <Box
@@ -219,7 +323,7 @@ export default function MatchPage() {
           <Panel title="Need help?">
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                Connection issues? Check your anti-cheat and restart CS2 before contacting support.
+                Connection issues? Check your console in CS:S before contacting support.
               </Typography>
               <Button component={RouterLink} to="/support" variant="outlined" fullWidth>
                 Contact support

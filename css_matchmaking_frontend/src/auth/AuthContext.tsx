@@ -1,217 +1,145 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Player } from '@/types';
+import { devCreateUser, devLogin, fetchProfile, type UserProfileResponse } from '@/api';
 
 export interface AuthUser {
-  email: string;
-  player: Player;
-}
-
-export interface DemoAccount {
-  id: string;
-  email: string;
-  password: string;
-  description: string;
-  player: Player;
-}
-
-export const DEMO_ACCOUNTS: DemoAccount[] = [
-  {
-    id: 's1mple',
-    email: 's1mple@faceit.gg',
-    password: 'password123',
-    description: 'Level 10 · FPL Pro',
-    player: {
-      name: 's1mple',
-      initials: 'S1',
-      countryCode: 'UA',
-      country: 'Ukraine',
-      elo: 3150,
-      level: 10,
-    },
-  },
-  {
-    id: 'vex',
-    email: 'vex@faceit.gg',
-    password: 'password123',
-    description: 'Level 8 · Challenger',
-    player: {
-      name: 'vex',
-      initials: 'VE',
-      countryCode: 'SE',
-      country: 'Sweden',
-      elo: 1842,
-      level: 8,
-    },
-  },
-  {
-    id: 'miko',
-    email: 'miko@faceit.gg',
-    password: 'password123',
-    description: 'Level 5 · Competitive',
-    player: {
-      name: 'miko',
-      initials: 'MI',
-      countryCode: 'FI',
-      country: 'Finland',
-      elo: 1350,
-      level: 5,
-    },
-  },
-  {
-    id: 'rookie',
-    email: 'rookie@faceit.gg',
-    password: 'password123',
-    description: 'Level 1 · Beginner',
-    player: {
-      name: 'rookie',
-      initials: 'RO',
-      countryCode: 'DE',
-      country: 'Germany',
-      elo: 820,
-      level: 1,
-    },
-  },
-];
-
-interface StoredAccount {
-  email: string;
-  password: string;
+  id: number;
+  steam_id?: string;
+  username: string;
+  elo: number;
+  matches_played: number;
+  wins: number;
+  losses: number;
   player: Player;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
-  demoAccounts: DemoAccount[];
-  login: (email: string, password: string, remember: boolean) => Promise<void>;
-  quickLogin: (account: DemoAccount) => Promise<void>;
-  register: (playerName: string, email: string, password: string) => Promise<void>;
+  loading: boolean;
+  login: (usernameOrId: string | number) => Promise<void>;
+  quickLogin: (username: string) => Promise<void>;
+  register: (playerName: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
-const STORAGE_KEY = 'mm.user';
-const ACCOUNTS_STORAGE_KEY = 'mm.registered_accounts';
+const STORAGE_KEY = 'mm.auth.user_id';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readStoredUser(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AuthUser) : null;
-  } catch {
-    return null;
-  }
-}
+function buildPlayer(profile: UserProfileResponse): Player {
+  const elo = profile.elo ?? 1000;
+  let level = 1;
+  if (elo >= 2001) level = 10;
+  else if (elo >= 1851) level = 9;
+  else if (elo >= 1701) level = 8;
+  else if (elo >= 1551) level = 7;
+  else if (elo >= 1401) level = 6;
+  else if (elo >= 1251) level = 5;
+  else if (elo >= 1101) level = 4;
+  else if (elo >= 951) level = 3;
+  else if (elo >= 801) level = 2;
 
-function storeUser(user: AuthUser | null, remember: boolean) {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(STORAGE_KEY);
-    if (user) (remember ? localStorage : sessionStorage).setItem(STORAGE_KEY, JSON.stringify(user));
-  } catch {
-    /* storage unavailable – keep in memory only */
-  }
-}
-
-function getStoredAccounts(): StoredAccount[] {
-  try {
-    const raw = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as StoredAccount[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveStoredAccount(account: StoredAccount) {
-  try {
-    const accounts = getStoredAccounts();
-    accounts.push(account);
-    localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
-  } catch {
-    /* storage unavailable */
-  }
+  const name = profile.username || `Player #${profile.id}`;
+  return {
+    name,
+    initials: name.slice(0, 2).toUpperCase(),
+    countryCode: 'RU',
+    country: 'Russia',
+    elo,
+    level,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(readStoredUser);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const login = useCallback<AuthContextValue['login']>(async (email, password, remember) => {
-    // Artificial small delay for realistic UX
-    await new Promise((r) => setTimeout(r, 250));
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const demo = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === normalizedEmail);
-    const registered = getStoredAccounts().find((a) => a.email.toLowerCase() === normalizedEmail);
-
-    const account = demo ?? registered;
-
-    if (!account) {
-      throw new Error('Пользователь с таким email не найден. Проверьте адрес или создайте аккаунт.');
-    }
-
-    if (account.password !== password) {
-      throw new Error('Неверный пароль. Пожалуйста, попробуйте еще раз.');
-    }
-
-    const next: AuthUser = { email: account.email, player: account.player };
-    storeUser(next, remember);
-    setUser(next);
-  }, []);
-
-  const quickLogin = useCallback<AuthContextValue['quickLogin']>(async (account) => {
-    await new Promise((r) => setTimeout(r, 150));
-    const next: AuthUser = { email: account.email, player: account.player };
-    storeUser(next, true);
-    setUser(next);
-  }, []);
-
-  const register = useCallback<AuthContextValue['register']>(async (playerName, email, password) => {
-    await new Promise((r) => setTimeout(r, 300));
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const trimmedName = playerName.trim();
-
-    // Check if email already taken
-    const emailExists =
-      DEMO_ACCOUNTS.some((a) => a.email.toLowerCase() === normalizedEmail) ||
-      getStoredAccounts().some((a) => a.email.toLowerCase() === normalizedEmail);
-
-    if (emailExists) {
-      throw new Error('Пользователь с таким email уже зарегистрирован.');
-    }
-
-    // Check if playerName already taken
-    const nameExists =
-      DEMO_ACCOUNTS.some((a) => a.player.name.toLowerCase() === trimmedName.toLowerCase()) ||
-      getStoredAccounts().some((a) => a.player.name.toLowerCase() === trimmedName.toLowerCase());
-
-    if (nameExists) {
-      throw new Error(`Никнейм "${trimmedName}" уже занят. Пожалуйста, выберите другой.`);
-    }
-
-    const newPlayer: Player = {
-      name: trimmedName,
-      initials: trimmedName.slice(0, 2).toUpperCase(),
-      countryCode: 'EU',
-      country: 'Europe',
-      elo: 1000,
-      level: 3,
+  // Обновление состояния игрока по свежим данным профиля с бэкенда
+  const syncProfile = useCallback(async (userId: number, steamId?: string): Promise<AuthUser> => {
+    const profile = await fetchProfile(userId);
+    const nextUser: AuthUser = {
+      id: profile.id,
+      steam_id: steamId,
+      username: profile.username,
+      elo: profile.elo,
+      matches_played: profile.matches_played,
+      wins: profile.wins,
+      losses: profile.losses,
+      player: buildPlayer(profile),
     };
-
-    saveStoredAccount({ email: normalizedEmail, password, player: newPlayer });
-
-    const next: AuthUser = { email: normalizedEmail, player: newPlayer };
-    storeUser(next, true);
-    setUser(next);
+    localStorage.setItem(STORAGE_KEY, String(profile.id));
+    setUser(nextUser);
+    return nextUser;
   }, []);
+
+  // При первом запуске проверяем, был ли сохранен ID пользователя и запрашиваем бэкенд
+  useEffect(() => {
+    const savedId = localStorage.getItem(STORAGE_KEY);
+    if (!savedId || isNaN(Number(savedId))) {
+      setLoading(false);
+      return;
+    }
+
+    const userId = Number(savedId);
+    syncProfile(userId)
+      .catch((err) => {
+        console.warn('[AUTH INIT] Не удалось восстановить сессию с бэкенда:', err);
+        localStorage.removeItem(STORAGE_KEY);
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [syncProfile]);
+
+  const login = useCallback<AuthContextValue['login']>(async (usernameOrId) => {
+    let targetUserId: number;
+    let steamId: string | undefined;
+
+    const trimmed = String(usernameOrId).trim();
+    if (!trimmed) {
+      throw new Error('Введите имя игрока или ID');
+    }
+
+    // Если введен ID (число)
+    if (!isNaN(Number(trimmed))) {
+      const res = await devLogin(Number(trimmed));
+      targetUserId = res.user_id;
+      steamId = res.steam_id;
+    } else {
+      // Если введено имя пользователя
+      const res = await devCreateUser(trimmed);
+      targetUserId = res.user_id;
+      steamId = res.steam_id;
+    }
+
+    await syncProfile(targetUserId, steamId);
+  }, [syncProfile]);
+
+  const quickLogin = useCallback<AuthContextValue['quickLogin']>(async (username) => {
+    const res = await devCreateUser(username);
+    await syncProfile(res.user_id, res.steam_id);
+  }, [syncProfile]);
+
+  const register = useCallback<AuthContextValue['register']>(async (playerName) => {
+    const res = await devCreateUser(playerName);
+    await syncProfile(res.user_id, res.steam_id);
+  }, [syncProfile]);
+
+  const refreshUser = useCallback(async () => {
+    if (!user?.id) return;
+    await syncProfile(user.id, user.steam_id);
+  }, [user?.id, user?.steam_id, syncProfile]);
 
   const logout = useCallback(() => {
-    storeUser(null, false);
+    localStorage.removeItem(STORAGE_KEY);
     setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, demoAccounts: DEMO_ACCOUNTS, login, quickLogin, register, logout }),
-    [user, login, quickLogin, register, logout],
+    () => ({ user, loading, login, quickLogin, register, refreshUser, logout }),
+    [user, loading, login, quickLogin, register, refreshUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -19,6 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { openMatchmakingSocket } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import Field from '@/components/Field';
 import PlayerAvatar from '@/components/PlayerAvatar';
@@ -120,6 +121,7 @@ export default function MatchmakingPage() {
 
   const [selectedMaps, setSelectedMaps] = useState<string[]>(MAP_POOL.map((m) => m.id));
   const [searching, setSearching] = useState(false);
+  const [queuePosition, setQueuePosition] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [inviteSlot, setInviteSlot] = useState<number | null>(null);
   const [customName, setCustomName] = useState('');
@@ -130,6 +132,41 @@ export default function MatchmakingPage() {
     const id = window.setInterval(() => setElapsed((t) => t + 1), 1000);
     return () => window.clearInterval(id);
   }, [searching]);
+
+  // Реальное подключение к очереди поиска матча по WebSocket
+  useEffect(() => {
+    if (!searching || !user?.id) return;
+
+    let isMounted = true;
+    const ws = openMatchmakingSocket(
+      user.id,
+      (data) => {
+        if (!isMounted) return;
+        if (data.type === 'queued') {
+          setQueuePosition(data.position);
+        } else if (data.type === 'match_ready') {
+          setToast(`Матч найден! Перенаправление на карту ${data.map}...`);
+          setSearching(false);
+          window.setTimeout(() => {
+            navigate(paths.match(data.room_id));
+          }, 1200);
+        }
+      },
+      (err) => {
+        console.error('WebSocket matchmaking error:', err);
+        if (isMounted) {
+          setToast('Ошибка подключения к серверу матчмейкинга.');
+          setSearching(false);
+        }
+      },
+    );
+
+    return () => {
+      isMounted = false;
+      ws.close();
+      setQueuePosition(null);
+    };
+  }, [searching, user?.id, navigate]);
 
   const levelProgress = useMemo(() => getLevelProgress(me.elo, me.level), [me.elo, me.level]);
 
@@ -577,7 +614,11 @@ export default function MatchmakingPage() {
             },
           }}
         >
-          {searching ? `ПОИСК МАТЧА… ${mmss(elapsed)} · ОТМЕНА` : 'НАЙТИ МАТЧ'}
+          {searching
+            ? queuePosition
+              ? `В ОЧЕРЕДИ (#${queuePosition}) · ${mmss(elapsed)} · ОТМЕНА`
+              : `ПОИСК МАТЧА… ${mmss(elapsed)} · ОТМЕНА`
+            : 'НАЙТИ МАТЧ'}
         </Button>
 
         <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: colors.textSecondary, fontSize: 12 }}>

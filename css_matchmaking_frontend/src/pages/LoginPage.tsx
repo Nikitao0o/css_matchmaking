@@ -1,13 +1,14 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import SportsEsports from '@mui/icons-material/SportsEsports';
 import { useState, type FormEvent } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '@/api/config';
 import { useAuth } from '@/auth/AuthContext';
 import AuthCard from '@/components/AuthCard';
 import Field from '@/components/Field';
@@ -15,36 +16,56 @@ import PlayerAvatar from '@/components/PlayerAvatar';
 import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TEST_ACCOUNTS = [
+  { name: 'DevPlayer', label: 'Тестовый игрок (ID 1)', level: 1, elo: 1000 },
+  { name: 'Player_1', label: 'Игрок 1 для матчинга', level: 3, elo: 1000 },
+  { name: 'Player_2', label: 'Игрок 2 для матчинга', level: 3, elo: 1000 },
+  { name: 's1mple', label: 'Про-игрок', level: 10, elo: 1000 },
+];
 
 export default function LoginPage() {
-  const { login, quickLogin, demoAccounts } = useAuth();
+  const { login, quickLogin } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [identifier, setIdentifier] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setAuthError(null);
-    const next: typeof errors = {};
-    if (!EMAIL_RE.test(email)) next.email = 'Введите корректный email адрес.';
-    if (!password) next.password = 'Введите пароль.';
-    setErrors(next);
-    if (Object.keys(next).length) return;
+
+    const val = identifier.trim();
+    if (!val) {
+      setAuthError('Введите никнейм игрока или числовой User ID');
+      return;
+    }
 
     setSubmitting(true);
     try {
-      await login(email, password, remember);
+      await login(val);
       navigate(paths.matchmaking, { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setAuthError(err.message);
       } else {
-        setAuthError('Не удалось войти. Проверьте данные.');
+        setAuthError('Не удалось войти. Убедитесь, что бэкенд запущен.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleQuickLogin = async (username: string) => {
+    setAuthError(null);
+    setSubmitting(true);
+    try {
+      await quickLogin(username);
+      navigate(paths.matchmaking, { replace: true });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setAuthError(err.message);
+      } else {
+        setAuthError('Ошибка входа через бэкенд.');
       }
     } finally {
       setSubmitting(false);
@@ -64,7 +85,7 @@ export default function LoginPage() {
       }
       note={
         <>
-          Проблемы со входом? <Link component={RouterLink} to="/support" color="inherit">Служба поддержки</Link>
+          Сервер API: <code>{API_BASE_URL}</code>
         </>
       }
     >
@@ -73,7 +94,7 @@ export default function LoginPage() {
           Вход в аккаунт
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Войдите, чтобы присоединиться к лобби и начать поиск матча.
+          Войдите под никнеймом или через Steam для подключения к матчмейкингу.
         </Typography>
 
         {authError && (
@@ -82,121 +103,106 @@ export default function LoginPage() {
           </Alert>
         )}
 
-        <Field label="Email адрес" type="email" value={email} onChange={setEmail} placeholder="name@example.com" error={errors.email} autoComplete="email" autoFocus />
-        <Field label="Пароль" type="password" value={password} onChange={setPassword} placeholder="Введите ваш пароль" error={errors.password} autoComplete="current-password" />
+        <Field
+          label="Никнейм или User ID"
+          value={identifier}
+          onChange={setIdentifier}
+          placeholder="Например: DevPlayer или 1"
+          helperText="Если игрока еще нет в базе данных, бэкенд создаст его автоматически."
+          autoFocus
+        />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-          <FormControlLabel
-            control={<Checkbox size="small" checked={remember} onChange={(e) => setRemember(e.target.checked)} />}
-            label="Запомнить меня"
-            slotProps={{ typography: { sx: { fontSize: 12, color: 'text.secondary' } } }}
-          />
-          <Link component={RouterLink} to="/forgot-password" sx={{ fontSize: 12 }}>
-            Забыли пароль?
-          </Link>
-        </Box>
-
-        <Button type="submit" variant="contained" size="large" fullWidth disabled={submitting}>
-          {submitting ? 'Вход…' : 'Войти'}
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={submitting}
+          sx={{ mt: 1.5, minHeight: 46 }}
+        >
+          {submitting ? 'Запрос к бэкенду…' : 'Войти через бэкенд'}
         </Button>
 
-        {/* Demo Accounts section */}
-        <Box sx={{ mt: 3, pt: 2.5, borderTop: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 800, color: 'primary.main', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              ⚡ Пробные аккаунты для теста
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: 11 }}>
-              пароль: password123
-            </Typography>
-          </Box>
+        {/* Steam Login */}
+        <Box sx={{ mt: 2 }}>
+          <Button
+            variant="outlined"
+            size="large"
+            fullWidth
+            component="a"
+            href={`${API_BASE_URL}/login`}
+            startIcon={<SportsEsports />}
+            sx={{
+              borderColor: '#171a21',
+              bgcolor: '#171a21',
+              color: '#fff',
+              '&:hover': { bgcolor: '#2a475e', borderColor: '#2a475e' },
+            }}
+          >
+            Войти через Steam OpenID
+          </Button>
+        </Box>
 
-          <Stack spacing={1}>
-            {demoAccounts.map((acc) => (
-              <Box
-                key={acc.id}
+        <Divider sx={{ my: 3 }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled', px: 1 }}>
+            ИЛИ БЫСТРЫЙ ВХОД ДЛЯ ТЕСТИРОВАНИЯ
+          </Typography>
+        </Divider>
+
+        {/* Real Backend Quick Login */}
+        <Stack spacing={1}>
+          {TEST_ACCOUNTS.map((acc) => (
+            <Box
+              key={acc.name}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                p: 1.25,
+                border: 1,
+                borderColor: colors.border,
+                bgcolor: colors.surfaceRaised,
+                borderRadius: 1,
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  borderColor: colors.primary,
+                  bgcolor: 'rgba(255, 85, 0, 0.06)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+                <PlayerAvatar initials={acc.name.slice(0, 2).toUpperCase()} size={30} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>
+                    {acc.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+                    {acc.label}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={submitting}
+                onClick={() => handleQuickLogin(acc.name)}
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 1.25,
-                  border: 1,
-                  borderColor: colors.border,
-                  bgcolor: colors.surfaceRaised,
-                  borderRadius: 1,
-                  transition: 'all 0.15s ease',
-                  '&:hover': {
-                    borderColor: colors.primary,
-                    bgcolor: 'rgba(255, 85, 0, 0.06)',
-                  },
+                  minHeight: 28,
+                  py: 0.25,
+                  px: 1.5,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  flexShrink: 0,
+                  ml: 1,
                 }}
               >
-                <Box
-                  onClick={() => {
-                    setEmail(acc.email);
-                    setPassword(acc.password);
-                    setAuthError(null);
-                  }}
-                  title="Нажмите, чтобы подставить в форму"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1.25, cursor: 'pointer', flex: 1, minWidth: 0 }}
-                >
-                  <PlayerAvatar initials={acc.player.initials} size={30} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {acc.player.name}
-                      </Typography>
-                      <Box
-                        sx={{
-                          px: 0.6,
-                          py: 0.1,
-                          bgcolor: acc.player.level === 10 ? '#EF4444' : colors.primary,
-                          color: '#fff',
-                          fontSize: 10,
-                          fontWeight: 800,
-                          borderRadius: '2px',
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        LVL {acc.player.level}
-                      </Box>
-                    </Box>
-                    <Typography sx={{ fontSize: 11, color: 'text.disabled', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {acc.player.elo} ELO · {acc.description}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={submitting}
-                  onClick={async () => {
-                    setSubmitting(true);
-                    try {
-                      await quickLogin(acc);
-                      navigate(paths.matchmaking, { replace: true });
-                    } finally {
-                      setSubmitting(false);
-                    }
-                  }}
-                  sx={{
-                    minHeight: 28,
-                    py: 0.25,
-                    px: 1.25,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    flexShrink: 0,
-                    ml: 1,
-                  }}
-                >
-                  Войти
-                </Button>
-              </Box>
-            ))}
-          </Stack>
-        </Box>
+                Войти
+              </Button>
+            </Box>
+          ))}
+        </Stack>
       </Box>
     </AuthCard>
   );

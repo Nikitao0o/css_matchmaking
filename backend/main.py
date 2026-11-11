@@ -110,10 +110,10 @@ async def callback(request: Request, db: Session = Depends(get_db)):
 async def dev_create_user(username: str = "DevPlayer", db: Session = Depends(get_db)):
     if os.getenv("ENV", "dev") == "production":
         raise HTTPException(403, "Dev endpoint disabled")
-    fake_steam_id = f"7656119{int.from_bytes(os.urandom(5), 'big') % 10**10:010d}"
-    existing = db.query(User).filter(User.steam_id == fake_steam_id).first()
+    existing = db.query(User).filter(User.username == username).first()
     if existing:
         return {"steam_id": existing.steam_id, "user_id": existing.id}
+    fake_steam_id = f"7656119{int.from_bytes(os.urandom(5), 'big') % 10**10:010d}"
     user = User(steam_id=fake_steam_id, username=username)
     #Create start stats (elo=1000, wins=0, losses=0)
     user.stats = PlayerStats()

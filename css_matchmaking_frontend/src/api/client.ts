@@ -1,4 +1,6 @@
-// custom class for errors, so we can see the response status (400, 404, 500 etc.)
+import { API_BASE_URL } from '@/api/config';
+
+// Кастомный класс ошибки, чтобы мы могли видеть статус ответа (400, 404, 500 и т.д.)
 export class ApiError extends Error {
   public status: number;
 
@@ -16,8 +18,10 @@ interface RequestOptions extends RequestInit {
 export async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { bodyData, headers, ...customConfig } = options;
 
+  const method = customConfig.method ?? (bodyData ? 'POST' : 'GET');
+
   const config: RequestInit = {
-    method: customConfig.method ?? (bodyData ? 'POST' : 'GET'),
+    method,
     headers: {
       'Content-Type': 'application/json',
       ...headers,
@@ -29,27 +33,42 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     config.body = JSON.stringify(bodyData);
   }
 
-  // Благодаря proxy в vite.config.ts мы можем указывать относительные пути: "/profile/1", "/dev/login"
-  const response = await fetch(endpoint, config);
+  const fullUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://')
+    ? endpoint
+    : `${API_BASE_URL.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+
+  console.log(`[API REQUEST] ${method} ${fullUrl}`, bodyData ?? '');
+
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, config);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error(`[API NETWORK ERROR] ${method} ${fullUrl}:`, errorMsg);
+    throw new ApiError(
+      0,
+      `Не удалось подключиться к серверу (${fullUrl}). Убедитесь, что бэкенд запущен и доступен.`,
+    );
+  }
+
+  console.log(`[API RESPONSE] ${response.status} ${fullUrl}`);
 
   if (!response.ok) {
-    // Пытаемся достать сообщение об ошибке, которое FastAPI отдает в поле `detail`
     let errorMessage = `Ошибка запроса (${response.status})`;
     try {
       const errorJson = await response.json();
       if (errorJson?.detail) {
-        errorMessage = typeof errorJson.detail === 'string' 
-          ? errorJson.detail 
+        errorMessage = typeof errorJson.detail === 'string'
+          ? errorJson.detail
           : JSON.stringify(errorJson.detail);
       }
     } catch {
-      // Если бэкенд вернул не JSON, оставляем статус
+      // Бэкенд вернул не JSON
     }
 
     throw new ApiError(response.status, errorMessage);
   }
 
-  // Если ответ пустой (например, 204 No Content), возвращаем пустой объект
   if (response.status === 204) {
     return {} as T;
   }
