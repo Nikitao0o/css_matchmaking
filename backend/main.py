@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
-from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom
+from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom, GameServer
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
 from srcds.rcon import RconConnection
@@ -8,7 +8,7 @@ from matchmaking import start_match, end_match, build_connect_command
 from fastapi_steam import SteamAuth, SteamUser
 from rcon import send_rcon_command, RCON_HOST, RCON_PORT, RCON_PASSWORD
 from typing import List
-import asyncio, json
+import asyncio, json, datetime
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -282,3 +282,43 @@ async def matchmaking_ws(websocket: WebSocket, user_id: int):
     except WebSocketDisconnect:
         if player in waiting_players:
             waiting_players.remove(player)
+
+
+@app.get("/servers")
+def list_servers(db: Session = Depends(get_db)):
+    servers = db.query(GameServer).filter(GameServer.status != "offline").all()
+    return [
+        {
+            "id": s.id,
+            "name": s.name,
+            "region": s.region,
+            "status": s.status,
+            "players": 0,  # populated later via A2S query
+        }
+        for s in servers
+    ]
+
+@app.post("/servers/{server_id}/heartbeat")
+def server_heartbeat(server_id: int, db: Session = Depends(get_db)):
+    server = db.query(GameServer).filter(GameServer.id == server_id).first()
+    if not server:
+        raise HTTPException(404, "Server not found")
+    server.last_heartbeat = datetime.utcnow()
+    db.commit()
+    return {"ok": True}
+
+@app.post("/dev/seed-server")# add server as debug
+def seed_server(db: Session = Depends(get_db)):
+    existing = db.query(GameServer).first()
+    if existing:
+        return {"message": "Server already exists"}
+    server = GameServer(
+        name="css-01",
+        ip=os.getenv("RCON_HOST"),
+        port=int(os.getenv("RCON_PORT", "27015")),
+        rcon_password=os.getenv("RCON_PASSWORD"),
+        region="local",
+    )
+    db.add(server)
+    db.commit()
+    return {"server_id": server.id}

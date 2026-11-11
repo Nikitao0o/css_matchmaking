@@ -85,3 +85,19 @@ class ControlSignal(BaseModel):
     roomId: str
     command: str
     args: dict = {}
+
+# Server Management
+
+class GameServer(Base):
+    __tablename__ = "game_servers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    ip = Column(String, nullable=False)
+    port = Column(Integer, default=27015)
+    rcon_password = Column(String, nullable=False)
+    status = Column(String, default="available")  # available, in_use, offline
+    current_room_id = Column(Integer, ForeignKey("match_rooms.id"), nullable=True)
+    max_players = Column(Integer, default=10)
+    region = Column(String, nullable=True)
+    last_heartbeat = Column(DateTime, default=datetime.utcnow)
