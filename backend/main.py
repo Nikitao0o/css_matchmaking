@@ -459,3 +459,38 @@ async def process_queue(game_mode: str = "1v1", db: Session = Depends(get_db)):
         return {"matched": False, "error": result["error"]}
 
     return {"matched": True, **result}
+
+@app.post("/dev/reset-state")
+def dev_reset_state(db: Session = Depends(get_db)):
+    if os.getenv("ENV", "dev") == "production":
+        raise HTTPException(403, "Dev endpoint disabled")
+
+    from models import User, MatchRoom, GameServer, QueueEntry
+
+    # 1. Detach players from rooms
+    detached = db.query(User).filter(User.current_room_id.isnot(None)).update(
+        {User.current_room_id: None}, synchronize_session=False
+    )
+    db.commit()
+
+    # 2. Clear the queue
+    queue_cleared = db.query(QueueEntry).delete(synchronize_session=False)
+    db.commit()
+
+    # 3. Free game servers BEFORE deleting rooms
+    servers_freed = db.query(GameServer).update(
+        {GameServer.status: "available", GameServer.current_room_id: None},
+        synchronize_session=False,
+    )
+    db.commit()
+
+    # 4. Delete rooms last
+    rooms_cleared = db.query(MatchRoom).delete(synchronize_session=False)
+    db.commit()
+
+    return {
+        "players_detached": detached,
+        "queue_cleared": queue_cleared,
+        "rooms_cleared": rooms_cleared,
+        "servers_freed": servers_freed,
+    }

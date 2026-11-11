@@ -75,8 +75,8 @@ def _create_match(db: Session, e1: QueueEntry, e2: QueueEntry, game_mode: str) -
 
     return {
         "room_id": room.id,
-        "server_ip": server.ip,
-        "server_port": server.port,
-        "connect": f"connect {server.ip}:{server.port}",
+        "server_ip": room.server_ip,
+        "server_port": room.server_port,
+        "connect": f"connect {room.server_ip}:{room.server_port}",
         "players": [u1.id, u2.id],
     }
