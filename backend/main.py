@@ -1,17 +1,29 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
-from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom
+from models import MatchReport, ControlSignal, User, UserResponse, MatchRoom, PlayerStats
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
 from srcds.rcon import RconConnection
 from matchmaking import start_match, end_match, build_connect_command
 from fastapi_steam import SteamAuth, SteamUser
+from fastapi.middleware.cors import CORSMiddleware
 from rcon import send_rcon_command, RCON_HOST, RCON_PORT, RCON_PASSWORD
 from typing import List
 import asyncio, json
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 steam = SteamAuth(
     api_key=os.getenv("STEAM_API_KEY"),
@@ -103,6 +115,8 @@ async def dev_create_user(username: str = "DevPlayer", db: Session = Depends(get
     if existing:
         return {"steam_id": existing.steam_id, "user_id": existing.id}
     user = User(steam_id=fake_steam_id, username=username)
+    #Create start stats (elo=1000, wins=0, losses=0)
+    user.stats = PlayerStats()
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -135,13 +149,20 @@ def get_profile(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
+
+    # if no stats of already created user id db
+    if not user.stats:
+        user.stats = PlayerStats()
+        db.add(user.stats)
+        db.commit()
+        db.refresh(user)
     return {
         "id": user.id,
         "username": user.username,
-        "elo": user.stats.elo,
-        "matches_played": user.stats.matches_played,
-        "wins": user.stats.wins,
-        "losses": user.stats.losses,
+        "elo": user.stats.elo if user.stats else 1000,
+        "matches_played": user.stats.matches_played if user.stats else 0,
+        "wins": user.stats.wins if user.stats else 0 ,
+        "losses": user.stats.losses if user.stats else 0,
     }
 
 
