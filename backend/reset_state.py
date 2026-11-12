@@ -1,8 +1,7 @@
 """
 Reset matchmaking state.
 Clears rooms, detaches players, and frees game servers.
-Requires: pip install requests
-Requires: backend running at http://localhost:8000
+Requires backend running at http://localhost:8000
 """
 
 import sys
@@ -26,14 +25,14 @@ def get(path, **kwargs):
 
 
 def main():
-    print("=== Listing current rooms ===")
+    print("Listing current rooms")
     try:
         rooms = get("/api/rooms")
         print(f"rooms endpoint returned: {rooms}")
     except requests.HTTPError:
-        print("could not list rooms via /api/rooms (may not be implemented)")
+        print("could not list rooms via /api/rooms")
 
-    print("\n=== Listing servers ===")
+    print("\nListing servers")
     servers = get("/servers")
     print(f"{len(servers)} server(s) registered")
 
