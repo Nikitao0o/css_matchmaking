@@ -56,22 +56,26 @@ def login(user_id: int) -> dict:
 def main():
     # 1. Ensure users exist
     print("\n>Ensuring users")
+    # 1. Ensure users exist
+    print("\n>Ensuring users")
     uid_a = ensure_user("Alice", USER_A_ID)
     uid_b = ensure_user("Bob", USER_B_ID)
 
     # 2. Log in as both
+    print("\n>Logging in")
     print("\n>Logging in")
     login(uid_a)
     login(uid_b)
 
     # 3. Join the queue
     print("\n>Joining queue")
-    post("/queue/join", params={"user_id": uid_a, "game_mode": "1v1"})
-    post("/queue/join", params={"user_id": uid_b, "game_mode": "1v1"})
+    post("/queue/join", params={"user_id": uid_a, "game_mode": "1v1", "map_group": "de_inferno"})
+    post("/queue/join", params={"user_id": uid_b, "game_mode": "1v1", "map_group": "de_inferno"})
     status = get("/queue/status", params={"game_mode": "1v1"})
     assert status["count"] == 2, f"expected 2 in queue, got {status['count']}"
 
     # 4. Process the queue
+    print("\n>Processing queue")
     print("\n>Processing queue")
     result = post("/queue/process", params={"game_mode": "1v1"})
     if not result.get("matched"):
@@ -83,6 +87,7 @@ def main():
 
     # 5. Verify both users are in the room
     print("\n>Verifying room assignment")
+    print("\n>Verifying room assignment")
     room = get(f"/rooms/{room_id}")
     player_ids = {p["id"] for p in room["players"]}
     assert player_ids == {uid_a, uid_b}, f"expected {uid_a},{uid_b}, got {player_ids}"
@@ -91,16 +96,19 @@ def main():
 
     # 6. Verify profile reflects the room
     print("\n>Verifying profile room link")
+    print("\n>Verifying profile room link")
     pa = get(f"/profile/{uid_a}")
     pb = get(f"/profile/{uid_b}")
     assert pa["current_room_id"] == room_id, f"Alice not linked to room {room_id}"
     assert pb["current_room_id"] == room_id, f"Bob not linked to room {room_id}"
 
     # 7. Build the connect command
+    # 7. Build the connect command
     server = room["server"]
     connect_cmd = f"connect {server['ip']}:{server['port']}"
     steam_link = f"steam://connect/{server['ip']}:{server['port']}"
 
+    print("\n>Result")
     print("\n>Result")
     print(f"console command: {connect_cmd}")
     print(f"steam link:      {steam_link}")

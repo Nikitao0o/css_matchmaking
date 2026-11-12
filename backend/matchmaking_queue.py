@@ -49,7 +49,7 @@ def _create_match(db: Session, e1: QueueEntry, e2: QueueEntry, game_mode: str) -
     room = MatchRoom(
         status="ready",
         game_mode=game_mode,
-        map_name=e1.preferred_maps.split(",")[0] if e1.preferred_maps else "de_dust2",
+        map_name=e1.preferred_maps.split(",")[0] if e1.preferred_maps else "de_inferno",
         bot_quota=0,
         game_server_id=server.id,
     )
