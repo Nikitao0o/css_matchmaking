@@ -17,9 +17,14 @@ import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createRoom, openMatchmakingSocket } from '@/api';
+import {
+  createRoom,
+  getQueueStatus,
+  joinQueue,
+  leaveQueue,
+} from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import Field from '@/components/Field';
 import PlayerAvatar from '@/components/PlayerAvatar';
@@ -118,11 +123,14 @@ export default function MatchmakingPage() {
 
   const [selectedMaps, setSelectedMaps] = useState<string[]>(MAP_POOL.map((m) => m.id));
   const [searching, setSearching] = useState(false);
-  const [queuePosition, setQueuePosition] = useState<number | null>(null);
+  const [queueSize, setQueueSize] = useState(0);
   const [elapsed, setElapsed] = useState(0);
+  const [activeGameMode, setActiveGameMode] = useState<string | null>(null);
+  const [queueRequestPending, setQueueRequestPending] = useState(false);
   const [inviteSlot, setInviteSlot] = useState<number | null>(null);
   const [customName, setCustomName] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const queueRequestInFlight = useRef(false);
 
   useEffect(() => {
     if (!searching) return;
@@ -130,40 +138,46 @@ export default function MatchmakingPage() {
     return () => window.clearInterval(id);
   }, [searching]);
 
-  // Реальное подключение к очереди поиска матча по WebSocket
   useEffect(() => {
-    if (!searching || !user?.id) return;
+    if (!searching || !activeGameMode) return;
 
-    let isMounted = true;
-    const ws = openMatchmakingSocket(
-      user.id,
-      (data) => {
-        if (!isMounted) return;
-        if (data.type === 'queued') {
-          setQueuePosition(data.position);
-        } else if (data.type === 'match_ready') {
-          setToast(`Матч найден! Перенаправление на карту ${data.map}...`);
-          setSearching(false);
-          window.setTimeout(() => {
-            navigate(paths.match(data.room_id));
-          }, 1200);
+    let active = true;
+    let requestInFlight = false;
+    let hasShownStatusError = false;
+    const updateQueueStatus = async () => {
+      if (!active || requestInFlight) return;
+      requestInFlight = true;
+
+      try {
+        const status = await getQueueStatus(activeGameMode);
+        if (active) {
+          setQueueSize(status.count);
+          hasShownStatusError = false;
         }
-      },
-      (err) => {
-        console.error('WebSocket matchmaking error:', err);
-        if (isMounted) {
-          setToast('Ошибка подключения к серверу матчмейкинга.');
-          setSearching(false);
+      } catch (err: unknown) {
+        if (active && !hasShownStatusError) {
+          setToast(
+            err instanceof Error
+              ? err.message
+              : 'Ошибка получения состояния очереди'
+          );
+          hasShownStatusError = true;
         }
-      },
-    );
+      } finally {
+        requestInFlight = false;
+      }
+    };
+
+    void updateQueueStatus();
+    const intervalId = window.setInterval(() => {
+      void updateQueueStatus();
+    }, 4000);
 
     return () => {
-      isMounted = false;
-      ws.close();
-      setQueuePosition(null);
+      active = false;
+      window.clearInterval(intervalId);
     };
-  }, [searching, user?.id, navigate]);
+  }, [searching, activeGameMode]);
 
   const levelProgress = useMemo(() => getLevelProgress(me.elo, me.level), [me.elo, me.level]);
 
@@ -209,19 +223,88 @@ export default function MatchmakingPage() {
     }
   };
 
-  const handleSearchToggle = () => {
-    if (!user) {
-      navigate(paths.login);
+  const handleSearchToggle = async () => {
+    if (queueRequestInFlight.current) {
       return;
     }
-    if (selectedMaps.length === 0) {
-      setToast('Выберите хотя бы одну карту для поиска матча!');
-      return;
+    queueRequestInFlight.current = true;
+    setQueueRequestPending(true);
+
+    try {
+      if (!user) {
+        navigate(paths.login);
+        return;
+      }
+
+      // Если поиск уже идёт — выходим из очереди
+      if (searching) {
+        const response = await leaveQueue(user.id);
+        if (!response.left) {
+          throw new Error('Не удалось выйти из очереди');
+        }
+
+        setSearching(false);
+        setActiveGameMode(null);
+        setQueueSize(0);
+        setElapsed(0);
+        setToast('Вы вышли из очереди');
+        return;
+      }
+
+      // Проверяем, выбрал ли пользователь карты
+      if (selectedMaps.length === 0) {
+        setToast('Выберите хотя бы одну карту для поиска матча!');
+        return;
+      }
+
+      // Преобразуем формат игры
+      const gameMode =
+        format === '5х5'
+          ? '5v5'
+          : format === '2х2'
+            ? '2v2'
+            : '1v1';
+
+      // Получаем коды выбранных карт
+      const preferredMaps = MAP_POOL
+        .filter((map) => selectedMaps.includes(map.id))
+        .map((map) => map.code)
+        .join(',');
+
+      setToast('Подключение к очереди...');
+
+      const response = await joinQueue({
+        user_id: user.id,
+        game_mode: gameMode,
+        map_group: 'default',
+        preferred_maps: preferredMaps,
+        latency_ms: null,
+      });
+
+      if (!response.queued) {
+        throw new Error('Не удалось подключиться к очереди');
+      }
+
+      setQueueSize(response.queue_size);
+      setActiveGameMode(gameMode);
+      setElapsed(0);
+      setSearching(true);
+
+      setToast(
+        `Вы добавлены в очередь. Игроков: ${response.queue_size}`
+      );
+    } catch (err: unknown) {
+      setToast(
+        err instanceof Error
+          ? err.message
+          : searching
+            ? 'Ошибка выхода из очереди'
+            : 'Ошибка подключения к очереди'
+      );
+    } finally {
+      queueRequestInFlight.current = false;
+      setQueueRequestPending(false);
     }
-    setSearching((s) => {
-      if (!s) setElapsed(0);
-      return !s;
-    });
   };
 
   const toggleMap = (mapId: string) => {
@@ -612,6 +695,7 @@ export default function MatchmakingPage() {
             size="large"
             startIcon={<Search sx={{ fontSize: 26 }} />}
             onClick={handleSearchToggle}
+            disabled={queueRequestPending}
             sx={{
               minWidth: { xs: '100%', sm: 300 },
               minHeight: 54,
@@ -628,11 +712,13 @@ export default function MatchmakingPage() {
               },
             }}
           >
-            {searching
-              ? queuePosition
-                ? `В ОЧЕРЕДИ (#${queuePosition}) · ${mmss(elapsed)} · ОТМЕНА`
-                : `ПОИСК МАТЧА… ${mmss(elapsed)} · ОТМЕНА`
-              : 'НАЙТИ МАТЧ'}
+            {queueRequestPending
+              ? searching
+                ? 'ВЫХОД ИЗ ОЧЕРЕДИ…'
+                : 'ПОДКЛЮЧЕНИЕ К ОЧЕРЕДИ…'
+              : searching
+                ? `Игроков в очереди: ${queueSize} · ${mmss(elapsed)} · ОТМЕНА`
+                : 'НАЙТИ МАТЧ'}
           </Button>
 
           <Button

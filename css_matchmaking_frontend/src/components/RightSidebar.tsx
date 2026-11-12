@@ -144,7 +144,6 @@ export default function RightSidebar() {
                   lineHeight: 1,
                 }}
               >
-                +25
               </Typography>
             </Box>
           </Tooltip>

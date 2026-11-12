@@ -1,5 +1,4 @@
 import { request } from '@/api/client';
-import { WS_BASE_URL } from '@/api/config';
 
 // ==========================================
 // 1. Типы ответов бэкенда
@@ -42,21 +41,6 @@ export interface RoomResponse {
 export interface ConnectCommandResponse {
   connect: string;
 }
-
-// Типы сообщений из WebSocket матчмейкинга
-export interface QueuedWsMessage {
-  type: 'queued';
-  position: number;
-}
-
-export interface MatchReadyWsMessage {
-  type: 'match_ready';
-  room_id: number;
-  connect: string;
-  map: string;
-}
-
-export type MatchmakingWsMessage = QueuedWsMessage | MatchReadyWsMessage;
 
 // ==========================================
 // 2. HTTP-запросы
@@ -103,6 +87,88 @@ export async function createRoom(
   return request<{ room_id: number; status: string }>(`/rooms/create?${query.toString()}`, {
     method: 'POST',
   });
+}
+
+// Типы для очереди матчмейкинга
+export interface JoinQueueRequest {
+  user_id: number;
+  game_mode: string;
+  map_group: string;
+  preferred_maps: string | null;
+  latency_ms: number | null;
+}
+
+export interface JoinQueueResponse {
+  queued: boolean;
+  queue_size: number;
+}
+
+export interface LeaveQueueResponse {
+  left: boolean;
+}
+
+export interface QueueStatusPlayer {
+  user_id: number;
+  elo: number;
+  waiting_s: number;
+}
+
+export interface QueueStatusResponse {
+  game_mode: string;
+  count: number;
+  players: QueueStatusPlayer[];
+}
+
+// Добавление игрока в очередь
+export async function joinQueue(
+  data: JoinQueueRequest
+): Promise<JoinQueueResponse> {
+  const query = new URLSearchParams({
+    user_id: String(data.user_id),
+    game_mode: data.game_mode,
+    map_group: data.map_group,
+  });
+
+  if (data.preferred_maps !== null) {
+    query.set('preferred_maps', data.preferred_maps);
+  }
+
+  if (data.latency_ms !== null) {
+    query.set('latency_ms', String(data.latency_ms));
+  }
+
+  return request<JoinQueueResponse>(
+    `/queue/join?${query.toString()}`,
+    { method: 'POST' }
+  );
+}
+
+// Выход игрока из очереди
+export async function leaveQueue(
+  userId: number
+): Promise<LeaveQueueResponse> {
+  const query = new URLSearchParams({
+    user_id: String(userId),
+  });
+
+  return request<LeaveQueueResponse>(
+    `/queue/leave?${query.toString()}`,
+    { method: 'POST' }
+  );
+}
+
+// Получение состояния очереди
+export async function getQueueStatus(
+  gameMode: string = '1v1'
+): Promise<QueueStatusResponse> {
+  const query = new URLSearchParams({
+    game_mode: gameMode,
+  });
+
+  return request<QueueStatusResponse>(
+    `/queue/status?${query.toString()}`,
+    { method: 'GET' }
+  );
 }
 
 /**
@@ -166,48 +232,4 @@ export async function endMatch(roomId: number): Promise<{ ok: boolean; result: u
   return request<{ ok: boolean; result: unknown }>(`/rooms/${roomId}/end`, {
     method: 'POST',
   });
-}
-
-// ==========================================
-// 3. WebSocket соединение матчмейкинга
-// ==========================================
-
-/**
- * Открыть WebSocket подключение к очереди матчмейкинга
- */
-export function openMatchmakingSocket(
-  userId: number,
-  onMessage: (data: MatchmakingWsMessage) => void,
-  onError?: (event: Event) => void,
-  onClose?: (event: CloseEvent) => void,
-): WebSocket {
-  const wsUrl = `${WS_BASE_URL.replace(/\/+$/, '')}/ws/matchmaking?user_id=${userId}`;
-  console.log(`[WS CONNECTING] ${wsUrl}`);
-  const ws = new WebSocket(wsUrl);
-
-  ws.onopen = () => {
-    console.log(`[WS CONNECTED] ${wsUrl}`);
-  };
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data) as MatchmakingWsMessage;
-      console.log(`[WS MESSAGE]`, data);
-      onMessage(data);
-    } catch (e) {
-      console.error('[WS PARSE ERROR]', e);
-    }
-  };
-
-  ws.onerror = (event) => {
-    console.error(`[WS ERROR] ${wsUrl}:`, event);
-    if (onError) onError(event);
-  };
-
-  ws.onclose = (event) => {
-    console.log(`[WS CLOSED] code: ${event.code}, reason: ${event.reason}`);
-    if (onClose) onClose(event);
-  };
-
-  return ws;
 }

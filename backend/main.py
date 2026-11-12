@@ -1,5 +1,4 @@
 import os
-from django.contrib.gis import db
 from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from models import MatchReport, MatchRoom, GameServer, QueueEntry, PlayerStats, User
 from database import Base, engine, get_db
