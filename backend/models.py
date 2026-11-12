@@ -20,10 +20,12 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     steam_id = Column(String, unique=True, index=True, nullable=False)
-    username = Column(String, nullable=True)
+    username = Column(String, nullable=True)          # display name, user-editable
+    avatar_url = Column(String, nullable=True)         # user-editable
+    country = Column(String, nullable=True)            # ISO code, user-editable
     created_at = Column(DateTime, default=datetime.utcnow)
+    last_played = Column(DateTime, nullable=True)
 
-    # This column is the foreign key that makes the relationship work
     current_room_id = Column(Integer, ForeignKey("match_rooms.id"), nullable=True)
 
     stats = relationship("PlayerStats", back_populates="user", uselist=False)
@@ -51,11 +53,11 @@ class MatchRoom(Base):
     game_mode = Column(String, default="1v1")
     map_name = Column(String, default="de_dust2")
     bot_quota = Column(Integer, default=0)
-    server_ip = Column(String, nullable=True)
-    server_port = Column(Integer, default=27015)
+    game_server_id = Column(Integer, ForeignKey("game_servers.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     players = relationship("User", back_populates="current_room")
+    game_server = relationship("GameServer", foreign_keys=[game_server_id])
 
 class MatchResult(Base):
     __tablename__ = "match_results"
@@ -85,3 +87,34 @@ class ControlSignal(BaseModel):
     roomId: str
     command: str
     args: dict = {}
+
+# Server Management
+
+class GameServer(Base):
+    __tablename__ = "game_servers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    ip = Column(String, nullable=False)
+    port = Column(Integer, default=27015)
+    rcon_password = Column(String, nullable=False)
+    status = Column(String, default="available")  # available, in_use, offline
+    current_room_id = Column(Integer, ForeignKey("match_rooms.id"), nullable=True)
+    max_players = Column(Integer, default=10)
+    region = Column(String, nullable=True)
+    last_heartbeat = Column(DateTime, default=datetime.utcnow)
+
+class QueueEntry(Base):
+    __tablename__ = "queue_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    game_mode = Column(String, default="1v1")
+    map_group = Column(String, default="default")  # e.g., "active_duty", "all"
+    preferred_maps = Column(String, nullable=True)  # comma-separated
+    region = Column(String, nullable=True)
+    elo_at_queue = Column(Integer, default=1000)
+    latency_ms = Column(Integer, nullable=True)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")

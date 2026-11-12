@@ -7,3 +7,4 @@ pysrcds
 pydantic
 email-validator
 fastapi-steam[fastapi]
+itsdangerous
