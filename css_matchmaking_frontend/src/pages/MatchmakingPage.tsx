@@ -19,11 +19,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { openMatchmakingSocket } from '@/api';
+import { createRoom, openMatchmakingSocket } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import Field from '@/components/Field';
 import PlayerAvatar from '@/components/PlayerAvatar';
-import { currentPlayer } from '@/data/mock';
 import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 import type { Player } from '@/types';
@@ -95,27 +94,25 @@ interface TeammateSlot {
   ready?: boolean;
 }
 
-const DEMO_TEAMMATES: Player[] = [
-  { name: 'miko', initials: 'MI', countryCode: 'FI', country: 'Finland', elo: 1796, level: 8 },
-  { name: 'recoil', initials: 'RE', countryCode: 'DE', country: 'Germany', elo: 1905, level: 9 },
-  { name: 'n0va', initials: 'NO', countryCode: 'DK', country: 'Denmark', elo: 1731, level: 8 },
-  { name: 'kaze', initials: 'KA', countryCode: 'NL', country: 'Netherlands', elo: 1866, level: 8 },
-  { name: 'blaze', initials: 'BL', countryCode: 'SE', country: 'Sweden', elo: 2150, level: 10 },
-  { name: 'frosty', initials: 'FR', countryCode: 'NO', country: 'Norway', elo: 1640, level: 7 },
-];
-
 export default function MatchmakingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const me = user?.player ?? currentPlayer;
+  const me: Player = user?.player ?? {
+    name: 'Гость (не авторизован)',
+    initials: '??',
+    countryCode: 'RU',
+    country: 'Россия',
+    elo: 1000,
+    level: 1,
+  };
 
-  const [format, setFormat] = useState<MatchFormat>('5х5');
+  const [format, setFormat] = useState<MatchFormat>('1х1');
 
-  // Slots around user (index 0, 1 on left, index 3, 4 on right)
+  // Слоты команды вокруг пользователя - по умолчанию пустые (без фейковых игроков)
   const [teammateSlots, setTeammateSlots] = useState<{ [index: number]: TeammateSlot }>({
-    0: { player: DEMO_TEAMMATES[0], ready: true },
-    1: { player: DEMO_TEAMMATES[1], ready: true },
-    3: { player: DEMO_TEAMMATES[2], ready: true },
+    0: {},
+    1: {},
+    3: {},
     4: {},
   });
 
@@ -195,6 +192,22 @@ export default function MatchmakingPage() {
     if (!trimmed) return false;
     return lobbyPlayerNames.has(trimmed);
   }, [customName, lobbyPlayerNames]);
+
+  const handleCreateRoom = async () => {
+    if (!user) {
+      navigate(paths.login);
+      return;
+    }
+    const map = selectedMaps[0] || 'de_dust2';
+    const mode = format === '5х5' ? '5v5' : '1v1';
+    try {
+      setToast('Создание комнаты…');
+      const res = await createRoom(user.id, mode, map);
+      navigate(paths.match(res.room_id));
+    } catch (err: unknown) {
+      setToast(err instanceof Error ? err.message : 'Ошибка создания комнаты');
+    }
+  };
 
   const handleSearchToggle = () => {
     if (!user) {
@@ -591,35 +604,54 @@ export default function MatchmakingPage() {
         )}
       </Box>
 
-      {/* 4. Matchmaking Search Button */}
+      {/* 4. Matchmaking Search & Create Room Buttons */}
       <Box sx={{ textAlign: 'center', py: 1 }}>
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<Search sx={{ fontSize: 26 }} />}
-          onClick={handleSearchToggle}
-          sx={{
-            minWidth: { xs: '100%', sm: 340 },
-            minHeight: 54,
-            fontSize: 16,
-            fontWeight: 900,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            bgcolor: searching ? '#EF4444' : colors.primary,
-            borderRadius: '6px',
-            boxShadow: searching ? '0 6px 24px rgba(239, 68, 68, 0.5)' : '0 6px 24px rgba(255, 85, 0, 0.45)',
-            '&:hover': {
-              bgcolor: searching ? '#DC2626' : colors.primaryHover,
-              boxShadow: searching ? '0 8px 28px rgba(239, 68, 68, 0.6)' : '0 8px 28px rgba(255, 85, 0, 0.55)',
-            },
-          }}
-        >
-          {searching
-            ? queuePosition
-              ? `В ОЧЕРЕДИ (#${queuePosition}) · ${mmss(elapsed)} · ОТМЕНА`
-              : `ПОИСК МАТЧА… ${mmss(elapsed)} · ОТМЕНА`
-            : 'НАЙТИ МАТЧ'}
-        </Button>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center', alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Search sx={{ fontSize: 26 }} />}
+            onClick={handleSearchToggle}
+            sx={{
+              minWidth: { xs: '100%', sm: 300 },
+              minHeight: 54,
+              fontSize: 16,
+              fontWeight: 900,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              bgcolor: searching ? '#EF4444' : colors.primary,
+              borderRadius: '6px',
+              boxShadow: searching ? '0 6px 24px rgba(239, 68, 68, 0.5)' : '0 6px 24px rgba(255, 85, 0, 0.45)',
+              '&:hover': {
+                bgcolor: searching ? '#DC2626' : colors.primaryHover,
+                boxShadow: searching ? '0 8px 28px rgba(239, 68, 68, 0.6)' : '0 8px 28px rgba(255, 85, 0, 0.55)',
+              },
+            }}
+          >
+            {searching
+              ? queuePosition
+                ? `В ОЧЕРЕДИ (#${queuePosition}) · ${mmss(elapsed)} · ОТМЕНА`
+                : `ПОИСК МАТЧА… ${mmss(elapsed)} · ОТМЕНА`
+              : 'НАЙТИ МАТЧ'}
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={handleCreateRoom}
+            sx={{
+              minWidth: { xs: '100%', sm: 220 },
+              minHeight: 54,
+              fontSize: 15,
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              borderRadius: '6px',
+            }}
+          >
+            Создать комнату
+          </Button>
+        </Box>
 
         <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: colors.textSecondary, fontSize: 12 }}>
           Формат: <span style={{ color: '#fff', fontWeight: 700 }}>{format}</span> · Карт в подборе:{' '}
@@ -770,88 +802,21 @@ export default function MatchmakingPage() {
               const customPlayer: Player = {
                 name: trimmed,
                 initials: trimmed.slice(0, 2).toUpperCase(),
-                countryCode: 'EU',
-                country: 'Europe',
-                elo: 1600,
-                level: 7,
+                countryCode: 'RU',
+                country: 'Россия',
+                elo: 1000,
+                level: 1,
               };
               addTeammate(inviteSlot, customPlayer);
             }
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Выберите тестового игрока или введите никнейм:
+            Введите никнейм игрока для добавления в лобби:
           </Typography>
 
-          <Stack spacing={1} sx={{ mb: 2.5 }}>
-            {DEMO_TEAMMATES.map((teammate) => {
-              const inLobby = lobbyPlayerNames.has(teammate.name.trim().toLowerCase());
-              return (
-                <Box
-                  key={teammate.name}
-                  onClick={() => {
-                    if (!inLobby && inviteSlot !== null) {
-                      addTeammate(inviteSlot, teammate);
-                    }
-                  }}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 1.25,
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: inLobby ? '#27272A' : colors.border,
-                    bgcolor: inLobby ? 'rgba(255, 255, 255, 0.02)' : colors.surfaceRaised,
-                    cursor: inLobby ? 'not-allowed' : 'pointer',
-                    opacity: inLobby ? 0.45 : 1,
-                    transition: 'all 0.15s ease',
-                    '&:hover': inLobby
-                      ? undefined
-                      : {
-                          borderColor: colors.primary,
-                          bgcolor: 'rgba(255, 85, 0, 0.08)',
-                        },
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <PlayerAvatar initials={teammate.initials} size={30} />
-                    <Box>
-                      <Typography sx={{ fontSize: 13, fontWeight: 700, color: inLobby ? colors.textSecondary : '#FFFFFF' }}>
-                        {teammate.name}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: colors.textSecondary }}>
-                        {teammate.elo} ELO · {teammate.country}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  {inLobby ? (
-                    <Box
-                      sx={{
-                        px: 1.25,
-                        py: 0.35,
-                        borderRadius: '4px',
-                        bgcolor: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: colors.textSecondary,
-                        fontSize: 11,
-                        fontWeight: 700,
-                      }}
-                    >
-                      В лобби
-                    </Box>
-                  ) : (
-                    <Button size="small" variant="contained" sx={{ minHeight: 26, py: 0.25, fontSize: 11 }}>
-                      Позвать
-                    </Button>
-                  )}
-                </Box>
-              );
-            })}
-          </Stack>
-
           <Field
-            label="Или введите имя игрока"
+            label="Имя игрока"
             value={customName}
             onChange={setCustomName}
             placeholder="Никнейм игрока"

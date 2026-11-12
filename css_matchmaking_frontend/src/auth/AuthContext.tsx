@@ -18,7 +18,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (usernameOrId: string | number) => Promise<void>;
   quickLogin: (username: string) => Promise<void>;
-  register: (playerName: string) => Promise<void>;
+  register: (playerName: string, email?: string, password?: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: () => void;
 }

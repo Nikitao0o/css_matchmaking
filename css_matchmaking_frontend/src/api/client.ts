@@ -47,7 +47,7 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     console.error(`[API NETWORK ERROR] ${method} ${fullUrl}:`, errorMsg);
     throw new ApiError(
       0,
-      `Не удалось подключиться к серверу (${fullUrl}). Убедитесь, что бэкенд запущен и доступен.`,
+      'Не удалось подключиться к серверу. Проверьте соединение с сетью.',
     );
   }
 

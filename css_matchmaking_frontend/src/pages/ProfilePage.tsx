@@ -1,16 +1,10 @@
-import OpenInNew from '@mui/icons-material/OpenInNew';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Link from '@mui/material/Link';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
@@ -21,14 +15,12 @@ import KeyValueList from '@/components/KeyValueList';
 import PageHeader from '@/components/PageHeader';
 import Panel from '@/components/Panel';
 import PlayerAvatar from '@/components/PlayerAvatar';
-import RatingChart from '@/components/RatingChart';
 import StatusBadge from '@/components/StatusBadge';
-import { denseTableSx } from '@/components/tableSx';
-import { currentPlayer, initialParty, mapStats, matchHistory, playerSummary, ratingHistory } from '@/data/mock';
+import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 
 const fmt = new Intl.NumberFormat('en-US');
-const TABS = ['Overview', 'Matches', 'Statistics', 'Teammates'] as const;
+const TABS = ['Overview', 'Matches', 'Statistics'] as const;
 
 function calculateLevel(elo: number): number {
   if (elo >= 2001) return 10;
@@ -45,47 +37,74 @@ function calculateLevel(elo: number): number {
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { name = user?.player.name ?? currentPlayer.name } = useParams();
+  const { name } = useParams();
   const [tab, setTab] = useState<(typeof TABS)[number]>('Overview');
   const [profileData, setProfileData] = useState<UserProfileResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load player info from active user or fallback mock
-  const isMe = Boolean(user && user.player.name.toLowerCase() === name.toLowerCase());
-  const player = isMe && user
-    ? user.player
-    : { ...currentPlayer, name, initials: name.slice(0, 2).toUpperCase() };
+  const targetId = user?.id;
 
   useEffect(() => {
-    if (!isMe || !user?.id) return;
+    if (!targetId) {
+      setLoading(false);
+      setError('Вы не авторизованы. Войдите в аккаунт, чтобы просмотреть профиль.');
+      return;
+    }
+
     setLoading(true);
-    fetchProfile(user.id)
+    setError(null);
+
+    fetchProfile(targetId)
       .then((data) => {
         setProfileData(data);
       })
       .catch((err) => {
-        console.error('Ошибка загрузки профиля с сервера:', err);
+        console.error('Ошибка загрузки профиля:', err);
+        setError('Не удалось загрузить данные игрока. Попробуйте обновить страницу.');
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [isMe, user?.id]);
+  }, [targetId]);
 
-  const s = playerSummary;
-  const partyMates = initialParty.flatMap((slot) => (slot.kind === 'player' && !slot.leader ? [slot.player.name] : []));
+  if (loading) {
+    return (
+      <Box sx={{ py: 12, textAlign: 'center' }}>
+        <CircularProgress sx={{ color: colors.primary }} />
+        <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: 14 }}>
+          Загрузка профиля…
+        </Typography>
+      </Box>
+    );
+  }
 
-  // Динамические данные из базы бэкенда (или fallback на мок)
-  const currentElo = profileData?.elo ?? player.elo;
-  const currentLevel = profileData ? calculateLevel(profileData.elo) : player.level;
-  const totalMatches = profileData?.matches_played ?? s.matches;
-  const winRate = profileData
-    ? (profileData.matches_played > 0 ? Math.round((profileData.wins / profileData.matches_played) * 100) : 0)
-    : s.winRate;
+  if (error || !profileData) {
+    return (
+      <Box sx={{ py: 6, maxWidth: 600, mx: 'auto' }}>
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          {error ?? 'Данные игрока не найдены.'}
+        </Alert>
+        <Button variant="contained" component={RouterLink} to={paths.login}>
+          Перейти на страницу входа
+        </Button>
+      </Box>
+    );
+  }
+
+  const username = profileData.username || name || `Player #${profileData.id}`;
+  const initials = username.slice(0, 2).toUpperCase();
+  const currentElo = profileData.elo ?? 1000;
+  const currentLevel = calculateLevel(currentElo);
+  const totalMatches = profileData.matches_played ?? 0;
+  const wins = profileData.wins ?? 0;
+  const losses = profileData.losses ?? 0;
+  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
   return (
     <>
       <PageHeader
-        crumbs={['Stack', 'Players', name]}
+        crumbs={['Stack', 'Players', username]}
         title="Player profile"
         subtitle="Counter-Strike: Source Matchmaking"
         action={
@@ -98,22 +117,22 @@ export default function ProfilePage() {
       {/* Hero */}
       <Box sx={{ border: 1, borderColor: 'divider', bgcolor: 'background.paper', p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3, flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <PlayerAvatar initials={player.initials} size={64} sx={{ fontSize: 26 }} />
+          <PlayerAvatar initials={initials} size={64} sx={{ fontSize: 26 }} />
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.2 }}>{player.name}</Typography>
-              {loading && <CircularProgress size={16} sx={{ color: colors.primary }} />}
-              {s.online && <StatusBadge label="ONLINE" />}
+              <Typography sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.2 }}>{username}</Typography>
+              <StatusBadge label="ONLINE" />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {s.realName} · {player.country} · Member since {s.memberSince}
+              ID: #{profileData.id} · Counter-Strike: Source Player
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.75, color: 'text.secondary', fontSize: 12 }}>
               <VerifiedUserOutlined sx={{ fontSize: 14, color: 'success.main' }} />
-              Steam verified · Anti-cheat enabled
+              Подтвержденный профиль CS:S
             </Box>
           </Box>
         </Box>
+
         <Box sx={{ textAlign: 'right' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
             <Typography sx={{ fontSize: 32, fontWeight: 700, lineHeight: 1.2 }}>{fmt.format(currentElo)} ELO</Typography>
@@ -134,7 +153,7 @@ export default function ProfilePage() {
             </Box>
           </Box>
           <Typography variant="caption">
-            Level {currentLevel} · #{fmt.format(s.rank)} in {s.region}
+            Level {currentLevel} · Рейтинговый профиль
           </Typography>
         </Box>
       </Box>
@@ -147,17 +166,19 @@ export default function ProfilePage() {
       </Tabs>
 
       {tab !== 'Overview' ? (
-        <Box sx={{ py: 8, textAlign: 'center', color: 'text.disabled' }}>{tab} will appear here.</Box>
+        <Box sx={{ py: 8, textAlign: 'center', color: 'text.disabled' }}>
+          {totalMatches === 0 ? 'Матчей пока не сыграно. Запустите матч в поиске игры.' : `${tab} данные загружаются`}
+        </Box>
       ) : (
         <Box sx={{ mt: 3, display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(0,1fr) 296px' }, alignItems: 'start' }}>
           {/* Main column */}
           <Box sx={{ display: 'grid', gap: 3, minWidth: 0 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
               {[
-                { value: String(totalMatches), label: 'Matches played' },
-                { value: `${winRate}%`, label: 'Win rate' },
-                { value: profileData ? String(profileData.wins) : String(Math.round((s.matches * s.winRate) / 100)), label: 'Wins' },
-                { value: profileData ? String(profileData.losses) : String(s.matches - Math.round((s.matches * s.winRate) / 100)), label: 'Losses' },
+                { value: String(totalMatches), label: 'Сыграно матчей' },
+                { value: `${winRate}%`, label: 'Винрейт' },
+                { value: String(wins), label: 'Побед' },
+                { value: String(losses), label: 'Поражений' },
               ].map((c, i) => (
                 <Box key={c.label} sx={{ p: 2, borderLeft: i === 0 ? 0 : 1, borderColor: 'divider' }}>
                   <Typography sx={{ fontSize: 24, fontWeight: 500 }}>{c.value}</Typography>
@@ -166,115 +187,30 @@ export default function ProfilePage() {
               ))}
             </Box>
 
-            <Panel title="Rating history" caption="Last 30 days">
-              <Box sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, mb: 1 }}>
-                  <Box sx={{ color: 'text.disabled' }}>ELO rating</Box>
-                  <Box sx={{ color: 'success.main', fontWeight: 600 }}>+{s.eloThisMonth} ELO this month</Box>
-                </Box>
-                <RatingChart values={ratingHistory.values} labels={ratingHistory.labels} />
-              </Box>
-            </Panel>
-
-            <Panel
-              title="Match history"
-              caption={
-                <Link component={RouterLink} to="/matches" color="inherit" underline="hover">
-                  View all matches →
-                </Link>
-              }
-            >
-              <Box sx={{ overflowX: 'auto' }}>
-                <Table size="small" sx={denseTableSx}>
-                  <TableHead>
-                    <TableRow>
-                      {['Date', 'Map', 'Result', 'Score', 'K / D / A', 'ELO'].map((h) => (
-                        <TableCell key={h}>{h}</TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {matchHistory.map((m) => {
-                      const win = m.result === 'W';
-                      return (
-                        <TableRow key={m.id} hover>
-                          <TableCell>
-                            <Link component={RouterLink} to={`/matches/${m.id}`} color="inherit" underline="hover">
-                              {m.date}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{m.map}</TableCell>
-                          <TableCell sx={{ color: win ? 'success.main' : colors.danger, fontWeight: 600 }}>{m.result}</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>{m.score}</TableCell>
-                          <TableCell>{m.kda}</TableCell>
-                          <TableCell sx={{ color: win ? 'success.main' : colors.danger }}>
-                            {m.eloDelta > 0 ? '+' : '−'}
-                            {Math.abs(m.eloDelta)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+            <Panel title="Статус аккаунта">
+              <Box sx={{ p: 2.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                  Официальный соревновательный профиль. Ваш ELO обновляется по результатам каждого сыгранного матча.
+                </Typography>
+                <Button component={RouterLink} to={paths.matchmaking} variant="contained">
+                  Перейти в поиск матча
+                </Button>
               </Box>
             </Panel>
           </Box>
 
           {/* Side column */}
           <Box sx={{ display: 'grid', gap: 3 }}>
-            <Panel title="Player details">
+            <Panel title="Параметры игрока">
               <KeyValueList
                 items={[
-                  { label: 'Country', value: player.country },
-                  { label: 'Joined', value: s.joined },
-                  { label: 'Last played', value: s.lastPlayed },
-                  { label: 'Preferred region', value: s.region },
-                  {
-                    label: 'Steam account',
-                    value: (
-                      <Link href={s.steamUrl} target="_blank" rel="noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                        {s.steamName} <OpenInNew sx={{ fontSize: 12 }} />
-                      </Link>
-                    ),
-                  },
-                  { label: 'Account status', value: s.status },
+                  { label: 'ID игрока', value: `#${profileData.id}` },
+                  { label: 'Никнейм', value: username },
+                  { label: 'Текущий ELO', value: String(currentElo) },
+                  { label: 'Статус аккаунта', value: 'Активен' },
+                  { label: 'Регион', value: 'Европа' },
                 ]}
               />
-            </Panel>
-
-            <Panel title="Map statistics" caption="Last 50 matches">
-              <Table size="small" sx={denseTableSx}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Map</TableCell>
-                    <TableCell align="right">Played / Win rate</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {mapStats.map((m) => (
-                    <TableRow key={m.map}>
-                      <TableCell sx={{ fontWeight: 600 }}>{m.map}</TableCell>
-                      <TableCell align="right">
-                        <Box component="span" sx={{ color: 'text.disabled', mr: 3 }}>
-                          {m.played}
-                        </Box>
-                        {m.winRate}%
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Panel>
-
-            <Panel title="Current party" caption={`${1 + partyMates.length} / 5`}>
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                  Playing with {partyMates.join(' and ')}
-                </Typography>
-                <Button component={RouterLink} to="/play" variant="outlined" fullWidth>
-                  Go to matchmaking
-                </Button>
-              </Box>
             </Panel>
           </Box>
         </Box>

@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import SportsEsports from '@mui/icons-material/SportsEsports';
 import { useState, type FormEvent } from 'react';
@@ -12,16 +11,8 @@ import { API_BASE_URL } from '@/api/config';
 import { useAuth } from '@/auth/AuthContext';
 import AuthCard from '@/components/AuthCard';
 import Field from '@/components/Field';
-import PlayerAvatar from '@/components/PlayerAvatar';
 import { paths } from '@/router/paths';
 import { colors } from '@/theme';
-
-const TEST_ACCOUNTS = [
-  { name: 'DevPlayer', label: 'Тестовый игрок (ID 1)', level: 1, elo: 1000 },
-  { name: 'Player_1', label: 'Игрок 1 для матчинга', level: 3, elo: 1000 },
-  { name: 'Player_2', label: 'Игрок 2 для матчинга', level: 3, elo: 1000 },
-  { name: 's1mple', label: 'Про-игрок', level: 10, elo: 1000 },
-];
 
 export default function LoginPage() {
   const { login, quickLogin } = useAuth();
@@ -36,7 +27,7 @@ export default function LoginPage() {
 
     const val = identifier.trim();
     if (!val) {
-      setAuthError('Введите никнейм игрока или числовой User ID');
+      setAuthError('Введите никнейм игрока');
       return;
     }
 
@@ -48,7 +39,7 @@ export default function LoginPage() {
       if (err instanceof Error) {
         setAuthError(err.message);
       } else {
-        setAuthError('Не удалось войти. Убедитесь, что бэкенд запущен.');
+        setAuthError('Не удалось войти. Проверьте соединение с сервером.');
       }
     } finally {
       setSubmitting(false);
@@ -65,7 +56,7 @@ export default function LoginPage() {
       if (err instanceof Error) {
         setAuthError(err.message);
       } else {
-        setAuthError('Ошибка входа через бэкенд.');
+        setAuthError('Не удалось войти в аккаунт.');
       }
     } finally {
       setSubmitting(false);
@@ -83,18 +74,14 @@ export default function LoginPage() {
           </Link>
         </>
       }
-      note={
-        <>
-          Сервер API: <code>{API_BASE_URL}</code>
-        </>
-      }
+      note="Соревновательная платформа Counter-Strike: Source"
     >
       <Box component="form" onSubmit={onSubmit} noValidate>
         <Typography variant="h2" component="h1" sx={{ mb: 0.5, fontWeight: 700 }}>
           Вход в аккаунт
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Войдите под никнеймом или через Steam для подключения к матчмейкингу.
+          Войдите под своим никнеймом или через Steam для участия в матчах.
         </Typography>
 
         {authError && (
@@ -104,11 +91,10 @@ export default function LoginPage() {
         )}
 
         <Field
-          label="Никнейм или User ID"
+          label="Никнейм или Email"
           value={identifier}
           onChange={setIdentifier}
-          placeholder="Например: DevPlayer или 1"
-          helperText="Если игрока еще нет в базе данных, бэкенд создаст его автоматически."
+          placeholder="Введите ваш никнейм"
           autoFocus
         />
 
@@ -120,7 +106,7 @@ export default function LoginPage() {
           disabled={submitting}
           sx={{ mt: 1.5, minHeight: 46 }}
         >
-          {submitting ? 'Запрос к бэкенду…' : 'Войти через бэкенд'}
+          {submitting ? 'Вход…' : 'Войти'}
         </Button>
 
         {/* Steam Login */}
@@ -139,70 +125,38 @@ export default function LoginPage() {
               '&:hover': { bgcolor: '#2a475e', borderColor: '#2a475e' },
             }}
           >
-            Войти через Steam OpenID
+            Войти через Steam
           </Button>
         </Box>
 
         <Divider sx={{ my: 3 }}>
           <Typography variant="caption" sx={{ color: 'text.disabled', px: 1 }}>
-            ИЛИ БЫСТРЫЙ ВХОД ДЛЯ ТЕСТИРОВАНИЯ
+            ИЛИ БЫСТРЫЙ ДОСТУП
           </Typography>
         </Divider>
 
-        {/* Real Backend Quick Login */}
-        <Stack spacing={1}>
-          {TEST_ACCOUNTS.map((acc) => (
-            <Box
-              key={acc.name}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                p: 1.25,
-                border: 1,
-                borderColor: colors.border,
-                bgcolor: colors.surfaceRaised,
-                borderRadius: 1,
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  borderColor: colors.primary,
-                  bgcolor: 'rgba(255, 85, 0, 0.06)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-                <PlayerAvatar initials={acc.name.slice(0, 2).toUpperCase()} size={30} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>
-                    {acc.name}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
-                    {acc.label}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={submitting}
-                onClick={() => handleQuickLogin(acc.name)}
-                sx={{
-                  minHeight: 28,
-                  py: 0.25,
-                  px: 1.5,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  flexShrink: 0,
-                  ml: 1,
-                }}
-              >
-                Войти
-              </Button>
-            </Box>
-          ))}
-        </Stack>
+        {/* Single Test Account Button */}
+        <Button
+          variant="outlined"
+          size="medium"
+          fullWidth
+          disabled={submitting}
+          onClick={() => handleQuickLogin('Player_1')}
+          sx={{
+            minHeight: 42,
+            fontSize: 13,
+            fontWeight: 600,
+            borderColor: colors.border,
+            color: 'text.secondary',
+            '&:hover': {
+              borderColor: colors.primary,
+              color: 'text.primary',
+              bgcolor: 'rgba(255, 85, 0, 0.05)',
+            },
+          }}
+        >
+          Войти как тестовый игрок
+        </Button>
       </Box>
     </AuthCard>
   );

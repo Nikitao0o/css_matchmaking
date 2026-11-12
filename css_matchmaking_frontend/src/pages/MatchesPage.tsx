@@ -1,49 +1,27 @@
-import Link from '@mui/material/Link';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 import PageHeader from '@/components/PageHeader';
 import Panel from '@/components/Panel';
-import { denseTableSx } from '@/components/tableSx';
-import { matchHistory } from '@/data/mock';
-import { colors } from '@/theme';
+import { paths } from '@/router/paths';
 
 export default function MatchesPage() {
   return (
     <>
-      <PageHeader crumbs={['Stack', 'Matches']} title="Matches" subtitle="Counter-Strike 2 · Season 04" />
-      <Panel title="Recent matches">
-        <Table size="small" sx={denseTableSx}>
-          <TableHead>
-            <TableRow>
-              {['Match', 'Date', 'Map', 'Result', 'Score', 'ELO'].map((h) => (
-                <TableCell key={h}>{h}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {matchHistory.map((m) => (
-              <TableRow key={m.id} hover>
-                <TableCell>
-                  <Link component={RouterLink} to={`/matches/${m.id}`}>
-                    #{m.id}
-                  </Link>
-                </TableCell>
-                <TableCell>{m.date}</TableCell>
-                <TableCell>{m.map}</TableCell>
-                <TableCell sx={{ color: m.result === 'W' ? 'success.main' : colors.danger, fontWeight: 600 }}>{m.result}</TableCell>
-                <TableCell>{m.score}</TableCell>
-                <TableCell sx={{ color: m.eloDelta > 0 ? 'success.main' : colors.danger }}>
-                  {m.eloDelta > 0 ? '+' : '−'}
-                  {Math.abs(m.eloDelta)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <PageHeader crumbs={['Stack', 'Matches']} title="История матчей" subtitle="Counter-Strike: Source Matchmaking" />
+      <Panel title="Список завершенных матчей">
+        <Box sx={{ py: 8, textAlign: 'center' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 16, mb: 2 }}>
+            История матчей пуста.
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.disabled', mb: 3 }}>
+            Сыгранные матчи сохраняются автоматически после завершения игры.
+          </Typography>
+          <Button variant="contained" component={RouterLink} to={paths.matchmaking}>
+            Начать поиск матча
+          </Button>
+        </Box>
       </Panel>
     </>
   );
