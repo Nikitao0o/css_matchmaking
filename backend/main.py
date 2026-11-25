@@ -16,6 +16,9 @@ from rcon import send_rcon_command, apply_match_config
 from fastapi.responses import RedirectResponse
 
 app = FastAPI()
+from queue_routes import router as queue_router
+app.include_router(queue_router)
+
 Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
@@ -332,66 +335,6 @@ def seed_server(db: Session = Depends(get_db)):
     db.add(server)
     db.commit()
     return {"server_id": server.id}
-
-@app.post("/queue/join")
-def join_queue(
-    user_id: int,
-    game_mode: str = "1v1",
-    map_group: str = "default",
-    preferred_maps: str = None,
-    latency_ms: int = None,
-    db: Session = Depends(get_db),
-):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(404, "User not found")
-    if user.current_room_id is not None:
-        raise HTTPException(400, "Already in a room")
-
-    existing = db.query(QueueEntry).filter(QueueEntry.user_id == user_id).first()
-    if existing:
-        raise HTTPException(400, "Already in queue")
-
-    entry = QueueEntry(
-        user_id=user_id,
-        game_mode=game_mode,
-        map_group=map_group,
-        preferred_maps=preferred_maps,
-        elo_at_queue=user.stats.elo if user.stats else 1000,
-        latency_ms=latency_ms,
-    )
-    db.add(entry)
-    db.commit()
-    return {"queued": True, "queue_size": db.query(QueueEntry).filter(QueueEntry.game_mode == game_mode).count()}
-
-@app.post("/queue/leave")
-def leave_queue(user_id: int, db: Session = Depends(get_db)):
-    entry = db.query(QueueEntry).filter(QueueEntry.user_id == user_id).first()
-    if not entry:
-        raise HTTPException(404, "Not in queue")
-    db.delete(entry)
-    db.commit()
-    return {"left": True}
-
-@app.get("/queue/status")
-def queue_status(game_mode: str = "1v1", db: Session = Depends(get_db)):
-    entries = db.query(QueueEntry).filter(QueueEntry.game_mode == game_mode).all()
-    return {
-        "game_mode": game_mode,
-        "count": len(entries),
-        "players": [{"user_id": e.user_id, "elo": e.elo_at_queue, "waiting_s": (datetime.utcnow() - e.joined_at).seconds} for e in entries],
-    }
-
-@app.post("/queue/process")
-async def process_queue(game_mode: str = "1v1", db: Session = Depends(get_db)):
-    from matchmaking_queue import find_match
-    result = find_match(db, game_mode)
-    if result is None:
-        return {"matched": False, "message": "No match found"}
-    if "error" in result:
-        return {"matched": False, "error": result["error"]}
-
-    return {"matched": True, **result}
 
 @app.post("/dev/reset-state")
 def dev_reset_state(db: Session = Depends(get_db)):
