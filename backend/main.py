@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, Request
 from models import MatchReport, MatchRoom, GameServer, QueueEntry, PlayerStats, User
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
@@ -7,12 +7,13 @@ from fastapi_steam import SteamAuth, SteamUser
 from fastapi.middleware.cors import CORSMiddleware
 from rcon import send_rcon_command
 from typing import List
-import asyncio, json, datetime
+import datetime
 from pydantic import BaseModel
 from typing import Optional
 from starlette.middleware.sessions import SessionMiddleware
 from datetime import datetime
 from rcon import send_rcon_command, apply_match_config
+from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -45,7 +46,6 @@ waiting_players: List[dict] = []
 
 @app.post("/api/report")
 async def report_match_data(report: MatchReport):
-    # No WebSocket broadcast anymore; just log or persist as needed.
     return {"ok": True, "roomId": report.roomId, "event": report.event}
 
 
@@ -83,6 +83,9 @@ async def callback(request: Request, db: Session = Depends(get_db)):
         existing = new_user
     existing.last_played = datetime.utcnow()
     db.commit()
+    return RedirectResponse(
+        url=f"http://localhost:5173/"
+    )
     return {"steam_id": existing.steam_id, "user_id": existing.id}
 
 class ProfileUpdate(BaseModel):
