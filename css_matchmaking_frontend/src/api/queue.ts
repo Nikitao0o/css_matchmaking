@@ -1,5 +1,11 @@
 import { request } from './client';
-import type { JoinQueueRequest, JoinQueueResponse, LeaveQueueResponse, QueueStatusResponse } from './types';
+import type {
+  JoinQueueRequest,
+  JoinQueueResponse,
+  LeaveQueueResponse,
+  QueueStatusResponse,
+  ReadyCheckResponse,
+} from './types';
 
 /**
  * Добавить игрока в очередь матчмейкинга
@@ -47,5 +53,31 @@ export async function getQueueStatus(gameMode: string = '1v1'): Promise<QueueSta
 
   return request<QueueStatusResponse>(`/queue/status?${query.toString()}`, {
     method: 'GET',
+  });
+}
+
+/**
+ * Проверить наличие активного подтверждения готовности (Ready Check)
+ */
+export async function getReadyCheck(userId: number): Promise<ReadyCheckResponse> {
+  return request<ReadyCheckResponse>(`/queue/ready-check?user_id=${userId}`, {
+    method: 'GET',
+  });
+}
+
+/**
+ * Принять или отклонить найденный матч
+ */
+export async function respondReadyCheck(
+  readyCheckId: number,
+  userId: number,
+  accept: boolean,
+): Promise<ReadyCheckResponse> {
+  const query = new URLSearchParams({
+    user_id: String(userId),
+    accept: String(accept),
+  });
+  return request<ReadyCheckResponse>(`/queue/ready-check/${readyCheckId}/respond?${query.toString()}`, {
+    method: 'POST',
   });
 }

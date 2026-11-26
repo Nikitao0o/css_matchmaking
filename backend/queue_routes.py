@@ -1,14 +1,25 @@
 """FastAPI queue router. Include with app.include_router(router).
 
-This preserves the supplied UX: join users, then explicitly POST /queue/process.
-The project must provide database.get_db and models.Base metadata as before.
+This preserves the supplied UX: join users, then explicitly POST /queue/process,
+and additionally supports FACEIT-style ready checks before creating a room.
 """
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import QueueEntry, User
-from matchmaking_queue import ALL_MAPS, MAP_GROUPS, MODE_SIZES, find_match, normalize_mode
+from models import MatchReadyCheck, QueueEntry, ReadyCheckPlayer, User
+from matchmaking_queue import (
+    ALL_MAPS,
+    MAP_GROUPS,
+    MODE_SIZES,
+    expire_stale_ready_checks,
+    finalize_ready_check_room,
+    find_match,
+    normalize_mode,
+    serialize_ready_check,
+    try_create_ready_check,
+)
 
 router = APIRouter(tags=["queue"])
 
@@ -76,6 +87,8 @@ def join_queue(
         db.rollback()
         raise HTTPException(409, "Could not join queue; user may already be queued") from exc
 
+    try_create_ready_check(db, mode)
+
     count = db.query(QueueEntry).filter(QueueEntry.game_mode == mode).count()
     return {"queued": True, "matched": False, "game_mode": mode,
             "queue_size": count, "required_players": MODE_SIZES[mode]}
@@ -86,6 +99,18 @@ def leave_queue(user_id: int, db: Session = Depends(get_db)):
     entry = db.query(QueueEntry).filter(QueueEntry.user_id == user_id).first()
     if not entry:
         raise HTTPException(404, "Not in queue")
+
+    pending_links = (
+        db.query(ReadyCheckPlayer)
+        .join(MatchReadyCheck, ReadyCheckPlayer.ready_check_id == MatchReadyCheck.id)
+        .filter(ReadyCheckPlayer.user_id == user_id, MatchReadyCheck.status == "pending")
+        .all()
+    )
+    for link in pending_links:
+        link.accepted = False
+        link.ready_check.status = "declined"
+        link.ready_check.resolved_at = datetime.utcnow()
+
     db.delete(entry)
     db.commit()
     return {"left": True}
@@ -93,18 +118,13 @@ def leave_queue(user_id: int, db: Session = Depends(get_db)):
 
 @router.get("/queue/status")
 def queue_status(game_mode: str = "1v1", db: Session = Depends(get_db)):
-    """Return a public roster and counts for one logical game-mode queue.
-
-    This is a snapshot, not a promise that every listed player is compatible
-    with every other player (map pool, ELO, latency, and region are checked by
-    the matchmaking algorithm).
-    """
-    from datetime import datetime
-
+    """Return a public roster and counts for one logical game-mode queue."""
     try:
         mode = normalize_mode(game_mode)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
+
+    expire_stale_ready_checks(db)
 
     entries = (
         db.query(QueueEntry)
@@ -136,11 +156,96 @@ def queue_status(game_mode: str = "1v1", db: Session = Depends(get_db)):
         "game_mode": mode,
         "count": count,
         "required_players": required_players,
-        # Number needed to reach the nominal roster size. The actual matcher
-        # may still wait if the roster has incompatible preferences/ratings.
         "players_needed": max(0, required_players - count),
         "players": players,
     }
+
+
+@router.get("/queue/ready-check")
+def get_ready_check(user_id: int, db: Session = Depends(get_db)):
+    """Return active or recently resolved ready check for a queued player."""
+    expire_stale_ready_checks(db)
+
+    pending = (
+        db.query(MatchReadyCheck)
+        .join(ReadyCheckPlayer, ReadyCheckPlayer.ready_check_id == MatchReadyCheck.id)
+        .filter(ReadyCheckPlayer.user_id == user_id, MatchReadyCheck.status == "pending")
+        .order_by(MatchReadyCheck.id.desc())
+        .first()
+    )
+    if pending:
+        return {"has_ready_check": True, "ready_check": serialize_ready_check(pending, user_id)}
+
+    entry = db.query(QueueEntry).filter(QueueEntry.user_id == user_id).first()
+    if entry:
+        created = try_create_ready_check(db, entry.game_mode)
+        if created:
+            return {"has_ready_check": True, "ready_check": serialize_ready_check(created, user_id)}
+
+    recent_cutoff = datetime.utcnow() - timedelta(seconds=8)
+    recent = (
+        db.query(MatchReadyCheck)
+        .join(ReadyCheckPlayer, ReadyCheckPlayer.ready_check_id == MatchReadyCheck.id)
+        .filter(
+            ReadyCheckPlayer.user_id == user_id,
+            MatchReadyCheck.resolved_at >= recent_cutoff,
+            MatchReadyCheck.status.in_(["accepted", "declined", "expired"]),
+        )
+        .order_by(MatchReadyCheck.id.desc())
+        .first()
+    )
+    if recent:
+        if recent.status == "accepted" and recent.room_id is not None:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.current_room_id == recent.room_id:
+                return {"has_ready_check": True, "ready_check": serialize_ready_check(recent, user_id)}
+        elif recent.status in ("declined", "expired"):
+            return {"has_ready_check": True, "ready_check": serialize_ready_check(recent, user_id)}
+
+    return {"has_ready_check": False, "ready_check": None}
+
+
+@router.post("/queue/ready-check/{ready_check_id}/respond")
+def respond_ready_check(
+    ready_check_id: int,
+    user_id: int,
+    accept: bool = True,
+    db: Session = Depends(get_db),
+):
+    """Accept or decline a pending match ready check."""
+    expire_stale_ready_checks(db)
+
+    rc = db.query(MatchReadyCheck).filter(MatchReadyCheck.id == ready_check_id).first()
+    if not rc:
+        raise HTTPException(404, "Ready check not found")
+
+    player = next((p for p in rc.players if p.user_id == user_id), None)
+    if not player:
+        raise HTTPException(403, "You are not a participant of this ready check")
+
+    if rc.status != "pending":
+        return {"has_ready_check": True, "ready_check": serialize_ready_check(rc, user_id)}
+
+    if not accept:
+        player.accepted = False
+        rc.status = "declined"
+        rc.resolved_at = datetime.utcnow()
+        db.query(QueueEntry).filter(QueueEntry.user_id == user_id).delete(
+            synchronize_session=False
+        )
+        db.commit()
+        db.refresh(rc)
+        return {"has_ready_check": True, "ready_check": serialize_ready_check(rc, user_id)}
+
+    player.accepted = True
+    db.commit()
+    db.refresh(rc)
+
+    if all(p.accepted is True for p in rc.players):
+        finalize_ready_check_room(db, rc)
+        db.refresh(rc)
+
+    return {"has_ready_check": True, "ready_check": serialize_ready_check(rc, user_id)}
 
 
 @router.post("/queue/process")

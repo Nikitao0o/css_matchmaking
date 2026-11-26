@@ -28,6 +28,7 @@ import {
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import Field from '@/components/Field';
+import { QUEUE_UPDATED_EVENT } from '@/components/MatchReadyCheckDialog';
 import PlayerAvatar from '@/components/PlayerAvatar';
 import TeammateCard, { type TeammateSlot } from '@/components/TeammateCard';
 import { MAP_POOL } from '@/constants/maps';
@@ -78,6 +79,7 @@ export default function MatchmakingPage() {
   const [selectedMaps, setSelectedMaps] = useState<string[]>(MAP_POOL.map((m) => m.id));
   const [searching, setSearching] = useState(false);
   const [queueSize, setQueueSize] = useState(0);
+  const [requiredPlayers, setRequiredPlayers] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [activeGameMode, setActiveGameMode] = useState<string | null>(null);
   const [queueRequestPending, setQueueRequestPending] = useState(false);
@@ -111,6 +113,7 @@ export default function MatchmakingPage() {
             if (matchedFormat) setFormat(matchedFormat);
             setActiveGameMode(status.game_mode);
             setQueueSize(status.count);
+            setRequiredPlayers(status.required_players ?? null);
             setElapsed(entry.waiting_s ?? 0);
             setSearching(true);
             return;
@@ -159,7 +162,18 @@ export default function MatchmakingPage() {
           return;
         }
 
+        const stillInQueue = status.players.some((p) => p.user_id === user.id);
+        if (!stillInQueue) {
+          setSearching(false);
+          setActiveGameMode(null);
+          setQueueSize(0);
+          setRequiredPlayers(null);
+          setElapsed(0);
+          return;
+        }
+
         setQueueSize(status.count);
+        setRequiredPlayers(status.required_players ?? null);
         hasShownStatusError = false;
       } catch (err: unknown) {
         if (active && !hasShownStatusError) {
@@ -175,14 +189,20 @@ export default function MatchmakingPage() {
       }
     };
 
+    const onQueueUpdated = () => {
+      void updateQueueStatus();
+    };
+
     void updateQueueStatus();
     const intervalId = window.setInterval(() => {
       void updateQueueStatus();
-    }, 4000);
+    }, 3000);
 
+    window.addEventListener(QUEUE_UPDATED_EVENT, onQueueUpdated);
     return () => {
       active = false;
       window.clearInterval(intervalId);
+      window.removeEventListener(QUEUE_UPDATED_EVENT, onQueueUpdated);
     };
   }, [searching, activeGameMode, user?.id, refreshUser, navigate]);
 
@@ -293,8 +313,10 @@ export default function MatchmakingPage() {
         setSearching(false);
         setActiveGameMode(null);
         setQueueSize(0);
+        setRequiredPlayers(null);
         setElapsed(0);
         await refreshUser();
+        window.dispatchEvent(new Event(QUEUE_UPDATED_EVENT));
         setToast('Вы вышли из очереди');
         return;
       }
@@ -337,6 +359,7 @@ export default function MatchmakingPage() {
       setActiveGameMode(gameMode);
       setElapsed(0);
       setSearching(true);
+      window.dispatchEvent(new Event(QUEUE_UPDATED_EVENT));
 
       setToast(`Вы добавлены в очередь. Игроков: ${response.queue_size}`);
     } catch (err: unknown) {
@@ -832,7 +855,7 @@ export default function MatchmakingPage() {
                 ? 'ВЫХОД ИЗ ОЧЕРЕДИ…'
                 : 'ПОДКЛЮЧЕНИЕ К ОЧЕРЕДИ…'
               : searching
-                ? `Игроков в очереди: ${queueSize} · ${mmss(elapsed)} · ОТМЕНА`
+                ? `Игроков в очереди: ${queueSize}${requiredPlayers ? ` / ${requiredPlayers}` : ''} · ${mmss(elapsed)} · ОТМЕНА`
                 : 'НАЙТИ МАТЧ'}
           </Button>
 

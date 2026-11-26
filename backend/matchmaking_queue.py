@@ -6,15 +6,17 @@ For multiple workers, use PostgreSQL row locks and a transaction/claiming strate
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import combinations
 import random
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from models import QueueEntry, User, MatchRoom, GameServer
+from models import QueueEntry, User, MatchRoom, GameServer, MatchReadyCheck, ReadyCheckPlayer
 from rcon import apply_match_config
+
+READY_CHECK_TIMEOUT_SECONDS = 25
 
 MODE_SIZES = {"1v1": 2, "wingman": 4, "5v5": 10}
 MODE_ALIASES = {"1x1": "1v1", "2v2": "wingman", "2x2": "wingman", "5x5": "5v5"}
@@ -252,4 +254,178 @@ def find_match(db: Session, game_mode: str = "1v1") -> dict:
         "steam_link": f"steam://connect/{server.ip}:{server.port}",
         "players": user_ids,
         "teams": {"A": [e.user_id for e in team_a], "B": [e.user_id for e in team_b]},
+    }
+
+
+def expire_stale_ready_checks(db: Session) -> None:
+    """Expire timed-out pending ready checks and drop AFK players from queue."""
+    now = datetime.utcnow()
+    stale = (
+        db.query(MatchReadyCheck)
+        .filter(MatchReadyCheck.status == "pending", MatchReadyCheck.expires_at <= now)
+        .all()
+    )
+    if not stale:
+        return
+
+    afk_user_ids: list[int] = []
+    for rc in stale:
+        rc.status = "expired"
+        rc.resolved_at = now
+        for player in rc.players:
+            if player.accepted is not True:
+                if player.accepted is None:
+                    player.accepted = False
+                afk_user_ids.append(player.user_id)
+
+    if afk_user_ids:
+        db.query(QueueEntry).filter(QueueEntry.user_id.in_(afk_user_ids)).delete(
+            synchronize_session=False
+        )
+    db.commit()
+
+
+def try_create_ready_check(db: Session, game_mode: str) -> Optional[MatchReadyCheck]:
+    """Create a pending ready check when enough compatible players are queued."""
+    expire_stale_ready_checks(db)
+
+    try:
+        mode = normalize_mode(game_mode)
+    except ValueError:
+        return None
+
+    required = MODE_SIZES[mode]
+    busy_rows = (
+        db.query(ReadyCheckPlayer.user_id)
+        .join(MatchReadyCheck, ReadyCheckPlayer.ready_check_id == MatchReadyCheck.id)
+        .filter(MatchReadyCheck.status == "pending")
+        .all()
+    )
+    busy_user_ids = {row[0] for row in busy_rows}
+
+    entries = (
+        db.query(QueueEntry)
+        .join(User, QueueEntry.user_id == User.id)
+        .filter(QueueEntry.game_mode == mode, User.current_room_id.is_(None))
+        .order_by(QueueEntry.joined_at, QueueEntry.id)
+        .all()
+    )
+    available_entries = [e for e in entries if e.user_id not in busy_user_ids]
+    if len(available_entries) < required:
+        return None
+
+    selected = _select_players(available_entries, required)
+    if not selected:
+        return None
+
+    maps = _common_maps(selected)
+    if not maps:
+        return None
+
+    now = datetime.utcnow()
+    rc = MatchReadyCheck(
+        game_mode=mode,
+        map_name=random.choice(maps),
+        status="pending",
+        expires_at=now + timedelta(seconds=READY_CHECK_TIMEOUT_SECONDS),
+    )
+    db.add(rc)
+    db.flush()
+
+    for entry in selected:
+        db.add(ReadyCheckPlayer(ready_check_id=rc.id, user_id=entry.user_id, accepted=None))
+
+    db.commit()
+    db.refresh(rc)
+    return rc
+
+
+def finalize_ready_check_room(db: Session, rc: MatchReadyCheck) -> MatchRoom:
+    """Create the match room once every player in the ready check accepted."""
+    if rc.room_id is not None:
+        existing_room = db.query(MatchRoom).filter(MatchRoom.id == rc.room_id).first()
+        if existing_room:
+            return existing_room
+
+    required = MODE_SIZES.get(rc.game_mode, 2)
+    user_ids = [p.user_id for p in rc.players]
+    users = db.query(User).filter(User.id.in_(user_ids)).all()
+
+    server = (
+        db.query(GameServer)
+        .filter(GameServer.status == "available", GameServer.max_players >= required)
+        .order_by(GameServer.id)
+        .with_for_update()
+        .first()
+    )
+
+    room = MatchRoom(
+        status="ready" if (server and server.ip) else "waiting",
+        game_mode=rc.game_mode,
+        map_name=rc.map_name,
+        bot_quota=0,
+        game_server_id=server.id if server else None,
+    )
+    db.add(room)
+    db.flush()
+
+    for user in users:
+        user.current_room_id = room.id
+
+    if server:
+        server.status = "in_use"
+        server.current_room_id = room.id
+
+    db.query(QueueEntry).filter(QueueEntry.user_id.in_(user_ids)).delete(
+        synchronize_session=False
+    )
+    rc.status = "accepted"
+    rc.resolved_at = datetime.utcnow()
+    rc.room_id = room.id
+    db.commit()
+    db.refresh(room)
+
+    if server and server.ip:
+        try:
+            apply_match_config(server, rc.map_name, rc.game_mode, 0)
+        except Exception:
+            pass
+
+    return room
+
+
+def serialize_ready_check(rc: MatchReadyCheck, current_user_id: int) -> dict:
+    now = datetime.utcnow()
+    seconds_left = (
+        max(0, int((rc.expires_at - now).total_seconds()))
+        if rc.status == "pending"
+        else 0
+    )
+    accepted_count = sum(1 for p in rc.players if p.accepted is True)
+    my_entry = next((p for p in rc.players if p.user_id == current_user_id), None)
+    if my_entry and my_entry.accepted is True:
+        my_status = "accepted"
+    elif my_entry and my_entry.accepted is False:
+        my_status = "declined"
+    else:
+        my_status = "pending"
+
+    return {
+        "id": rc.id,
+        "status": rc.status,
+        "game_mode": rc.game_mode,
+        "map_name": rc.map_name,
+        "room_id": rc.room_id,
+        "accepted_count": accepted_count,
+        "total_players": len(rc.players),
+        "seconds_left": seconds_left,
+        "my_status": my_status,
+        "players": [
+            {
+                "user_id": p.user_id,
+                "username": p.user.username if p.user else None,
+                "accepted": p.accepted,
+            }
+            for p in rc.players
+        ],
     }

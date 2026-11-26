@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import { Outlet } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import LeftSidebar from '@/components/LeftSidebar';
+import MatchReadyCheckDialog from '@/components/MatchReadyCheckDialog';
 import PageContainer from '@/components/PageContainer';
 import RightSidebar from '@/components/RightSidebar';
 
@@ -35,6 +36,9 @@ export default function MainLayout() {
 
       {/* Right profile, ELO & utility panel */}
       <RightSidebar />
+
+      {/* Global FACEIT-style ready check modal */}
+      <MatchReadyCheckDialog />
     </Box>
   );
 }

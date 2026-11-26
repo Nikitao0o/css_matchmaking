@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Any
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
@@ -117,4 +117,36 @@ class QueueEntry(Base):# current queue entry
     latency_ms = Column(Integer, nullable=True)
     joined_at = Column(DateTime, default=datetime.utcnow)
 
+    user = relationship("User")
+
+
+class MatchReadyCheck(Base):
+    __tablename__ = "match_ready_checks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    game_mode = Column(String, nullable=False, default="1v1")
+    map_name = Column(String, nullable=False, default="de_dust2")
+    status = Column(String, nullable=False, default="pending")  # pending, accepted, declined, expired
+    room_id = Column(Integer, ForeignKey("match_rooms.id"), nullable=True)
+    expires_at = Column(DateTime, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    players = relationship(
+        "ReadyCheckPlayer",
+        back_populates="ready_check",
+        cascade="all, delete-orphan",
+        order_by="ReadyCheckPlayer.id",
+    )
+
+
+class ReadyCheckPlayer(Base):
+    __tablename__ = "ready_check_players"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ready_check_id = Column(Integer, ForeignKey("match_ready_checks.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    accepted = Column(Boolean, nullable=True)  # None = waiting, True = accepted, False = declined
+
+    ready_check = relationship("MatchReadyCheck", back_populates="players")
     user = relationship("User")

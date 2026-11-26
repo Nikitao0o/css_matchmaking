@@ -77,7 +77,33 @@ export interface QueueStatusPlayer {
 export interface QueueStatusResponse {
   game_mode: string;
   count: number;
+  required_players?: number;
+  players_needed?: number;
   players: QueueStatusPlayer[];
+}
+
+export interface ReadyCheckPlayer {
+  user_id: number;
+  username: string | null;
+  accepted: boolean | null;
+}
+
+export interface ReadyCheckData {
+  id: number;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  game_mode: string;
+  map_name: string;
+  room_id: number | null;
+  accepted_count: number;
+  total_players: number;
+  seconds_left: number;
+  my_status: 'pending' | 'accepted' | 'declined';
+  players: ReadyCheckPlayer[];
+}
+
+export interface ReadyCheckResponse {
+  has_ready_check: boolean;
+  ready_check: ReadyCheckData | null;
 }
 
 export interface MatchHistoryItem {
