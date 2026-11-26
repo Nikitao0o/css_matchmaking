@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { devCreateUser, devLogin, fetchProfile } from '@/api';
+import { devCreateUser, fetchProfile } from '@/api';
 import type { Player } from '@/types';
 import { buildPlayerFromProfile } from '@/utils/elo';
 
@@ -18,9 +18,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (usernameOrId: string | number) => Promise<void>;
   quickLogin: (username: string) => Promise<void>;
-  register: (playerName: string, email?: string, password?: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: () => void;
 }
@@ -52,8 +50,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return nextUser;
   }, []);
 
-  // При первом запуске проверяем, был ли сохранен ID пользователя и запрашиваем бэкенд
+  // При первом запуске проверяем параметры Steam-коллбэка или сохраненный ID пользователя
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const callbackUserId = params.get('user_id');
+    const callbackSteamId = params.get('steam_id') ?? undefined;
+
+    if (callbackUserId && !isNaN(Number(callbackUserId))) {
+      const userId = Number(callbackUserId);
+      localStorage.setItem(STORAGE_KEY, String(userId));
+      params.delete('user_id');
+      params.delete('steam_id');
+      const remainingQuery = params.toString();
+      const cleanUrl = `${window.location.pathname}${remainingQuery ? `?${remainingQuery}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', cleanUrl);
+
+      syncProfile(userId, callbackSteamId)
+        .catch((err) => {
+          console.warn('[STEAM AUTH] Не удалось загрузить профиль после входа через Steam:', err);
+          localStorage.removeItem(STORAGE_KEY);
+          setUser(null);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+      return;
+    }
+
     const savedId = localStorage.getItem(STORAGE_KEY);
     if (!savedId || isNaN(Number(savedId))) {
       setLoading(false);
@@ -61,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const userId = Number(savedId);
-    syncProfile(userId)
+    syncProfile(userId, callbackSteamId)
       .catch((err) => {
         console.warn('[AUTH INIT] Не удалось восстановить сессию с бэкенда:', err);
         localStorage.removeItem(STORAGE_KEY);
@@ -72,37 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
   }, [syncProfile]);
 
-  const login = useCallback<AuthContextValue['login']>(async (usernameOrId) => {
-    let targetUserId: number;
-    let steamId: string | undefined;
-
-    const trimmed = String(usernameOrId).trim();
-    if (!trimmed) {
-      throw new Error('Введите имя игрока или ID');
-    }
-
-    // Если введен ID (число)
-    if (!isNaN(Number(trimmed))) {
-      const res = await devLogin(Number(trimmed));
-      targetUserId = res.user_id;
-      steamId = res.steam_id;
-    } else {
-      // Если введено имя пользователя
-      const res = await devCreateUser(trimmed);
-      targetUserId = res.user_id;
-      steamId = res.steam_id;
-    }
-
-    await syncProfile(targetUserId, steamId);
-  }, [syncProfile]);
-
   const quickLogin = useCallback<AuthContextValue['quickLogin']>(async (username) => {
     const res = await devCreateUser(username);
-    await syncProfile(res.user_id, res.steam_id);
-  }, [syncProfile]);
-
-  const register = useCallback<AuthContextValue['register']>(async (playerName) => {
-    const res = await devCreateUser(playerName);
     await syncProfile(res.user_id, res.steam_id);
   }, [syncProfile]);
 
@@ -117,8 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, quickLogin, register, refreshUser, logout }),
-    [user, loading, login, quickLogin, register, refreshUser, logout],
+    () => ({ user, loading, quickLogin, refreshUser, logout }),
+    [user, loading, quickLogin, refreshUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

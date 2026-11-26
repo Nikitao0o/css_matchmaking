@@ -63,12 +63,19 @@ async def login(request: Request):
 
 @app.get("/auth/callback")
 async def callback(request: Request, db: Session = Depends(get_db)):
+    steam_username = None
+    steam_avatar = None
+    steam_country = None
+
     try:
         user: SteamUser = await steam.authenticate(
             request,
             state=request.session["steam_state"],
         )
         steam_id = user.steam_id
+        steam_username = user.personaname
+        steam_avatar = user.avatar_full or user.avatar
+        steam_country = user.loccountrycode.upper()[:2] if user.loccountrycode else None
     except Exception as e:
         # Fallback: extract SteamID directly from the OpenID callback
         # The library already validated the signature before failing on the summary fetch
@@ -79,17 +86,29 @@ async def callback(request: Request, db: Session = Depends(get_db)):
 
     existing = db.query(User).filter(User.steam_id == steam_id).first()
     if not existing:
-        new_user = User(steam_id=steam_id, username=f"Player_{steam_id[-6:]}")
+        new_user = User(
+            steam_id=steam_id,
+            username=steam_username or f"Player_{steam_id[-6:]}",
+            avatar_url=steam_avatar,
+            country=steam_country,
+        )
         db.add(new_user)
+        db.flush()
+        db.add(PlayerStats(user_id=new_user.id))
         db.commit()
         db.refresh(new_user)
         existing = new_user
+    elif not existing.stats:
+        db.add(PlayerStats(user_id=existing.id))
+
     existing.last_played = datetime.utcnow()
     db.commit()
+
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
     return RedirectResponse(
-        url=f"http://localhost:5173/"
+        url=f"{frontend_url}/?user_id={existing.id}&steam_id={existing.steam_id}",
+        status_code=302,
     )
-    return {"steam_id": existing.steam_id, "user_id": existing.id}
 
 class ProfileUpdate(BaseModel):
     username: Optional[str] = None

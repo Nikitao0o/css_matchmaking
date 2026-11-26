@@ -430,7 +430,7 @@ export default function HomePage() {
             Турнирный соревновательный маппул
           </Typography>
           <Typography sx={{ fontSize: 13, color: colors.textSecondary, maxWidth: 560 }}>
-            Mirage, Dust II, Inferno, Nuke, Train, Cache, Tuscan, Cobblestone. Выбирайте любимые карты в лобби перед началом поиска.
+            Dust II, Inferno, Nuke, Train, Cobblestone, Aztec, Dust, Piranesi. Выбирайте любимые карты в лобби перед началом поиска.
           </Typography>
         </Box>
 

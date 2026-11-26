@@ -4,7 +4,6 @@ export const paths = {
   home: '/home',
   matchmaking: '/matchmaking',
   login: '/login',
-  register: '/register',
   matches: '/matches',
   match: (id: string | number = ':id') => `/matches/${id}`,
   rankings: '/rankings',

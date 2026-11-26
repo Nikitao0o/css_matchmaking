@@ -28,7 +28,6 @@ const routes: RouteObject[] = [
       { path: paths.player(), ...page(() => import('@/pages/ProfilePage')) },
       { path: paths.rankings, ...page(() => import('@/pages/RankingsPage')) },
       { path: paths.login, ...page(() => import('@/pages/LoginPage')) },
-      { path: paths.register, ...page(() => import('@/pages/RegisterPage')) },
       { path: paths.rules, ...comingSoon('Правила') },
       { path: paths.support, ...comingSoon('Поддержка') },
       { path: paths.privacy, ...comingSoon('Конфиденциальность') },

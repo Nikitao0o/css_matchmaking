@@ -253,32 +253,17 @@ export default function RightSidebar() {
               <Button
                 component={RouterLink}
                 to={paths.login}
-                variant="outlined"
-                size="small"
-                sx={{
-                  py: 0.25,
-                  px: 0.5,
-                  minHeight: 26,
-                  fontSize: 10,
-                  fontWeight: 700,
-                }}
-              >
-                Вход
-              </Button>
-              <Button
-                component={RouterLink}
-                to={paths.register}
                 variant="contained"
                 size="small"
                 sx={{
                   py: 0.25,
                   px: 0.5,
-                  minHeight: 26,
+                  minHeight: 28,
                   fontSize: 10,
                   fontWeight: 700,
                 }}
               >
-                Рег.
+                Вход
               </Button>
             </Stack>
           </Box>

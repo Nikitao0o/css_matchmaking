@@ -39,6 +39,21 @@ import { fmt, mmss } from '@/utils/format';
 
 type MatchFormat = '5х5' | '2х2' | '1х1';
 
+const GAME_MODE_TO_FORMAT: Record<string, MatchFormat> = {
+  '5v5': '5х5',
+  '2v2': '2х2',
+  wingman: '2х2',
+  '1v1': '1х1',
+};
+
+const FORMAT_TO_GAME_MODE: Record<MatchFormat, string> = {
+  '5х5': '5v5',
+  '2х2': '2v2',
+  '1х1': '1v1',
+};
+
+const ALL_GAME_MODES = ['1v1', '2v2', '5v5'] as const;
+
 export default function MatchmakingPage() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
@@ -72,6 +87,46 @@ export default function MatchmakingPage() {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const queueRequestInFlight = useRef(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    let active = true;
+    const restoreQueueState = async () => {
+      try {
+        const [profile, ...statuses] = await Promise.all([
+          fetchProfile(user.id),
+          ...ALL_GAME_MODES.map((mode) => getQueueStatus(mode)),
+        ]);
+        if (!active) return;
+
+        if ((profile.current_room_id ?? null) !== user.current_room_id) {
+          void refreshUser();
+        }
+
+        for (const status of statuses) {
+          const entry = status.players.find((p) => p.user_id === user.id);
+          if (entry) {
+            const matchedFormat = GAME_MODE_TO_FORMAT[status.game_mode];
+            if (matchedFormat) setFormat(matchedFormat);
+            setActiveGameMode(status.game_mode);
+            setQueueSize(status.count);
+            setElapsed(entry.waiting_s ?? 0);
+            setSearching(true);
+            return;
+          }
+        }
+      } catch (err: unknown) {
+        console.warn('[MATCHMAKING INIT] Не удалось восстановить состояние очереди:', err);
+      }
+    };
+
+    void restoreQueueState();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id, user?.current_room_id, refreshUser]);
 
   useEffect(() => {
     if (!searching) return;
@@ -175,15 +230,38 @@ export default function MatchmakingPage() {
       return;
     }
     const mapCode = MAP_POOL.find((m) => m.id === selectedMaps[0])?.code ?? 'de_dust2';
-    const mode = format === '5х5' ? '5v5' : format === '2х2' ? '2v2' : '1v1';
+    const mode = FORMAT_TO_GAME_MODE[format];
     try {
       setToast('Создание комнаты…');
       const res = await createRoom(user.id, mode, mapCode);
       await refreshUser();
       navigate(paths.match(res.room_id));
     } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 400 && err.message.toLowerCase().includes('already in a room')) {
+        await refreshUser();
+        setToast('Вы уже находитесь в активной комнате');
+        return;
+      }
       setToast(err instanceof Error ? err.message : 'Ошибка создания комнаты');
     }
+  };
+
+  const syncExistingQueueEntry = async (): Promise<boolean> => {
+    if (!user?.id) return false;
+    const statuses = await Promise.all(ALL_GAME_MODES.map((mode) => getQueueStatus(mode)));
+    for (const status of statuses) {
+      const entry = status.players.find((p) => p.user_id === user.id);
+      if (entry) {
+        const matchedFormat = GAME_MODE_TO_FORMAT[status.game_mode];
+        if (matchedFormat) setFormat(matchedFormat);
+        setActiveGameMode(status.game_mode);
+        setQueueSize(status.count);
+        setElapsed(entry.waiting_s ?? 0);
+        setSearching(true);
+        return true;
+      }
+    }
+    return false;
   };
 
   const handleSearchToggle = async () => {
@@ -200,15 +278,23 @@ export default function MatchmakingPage() {
       }
 
       if (searching) {
-        const response = await leaveQueue(user.id);
-        if (!response.left) {
-          throw new Error('Не удалось выйти из очереди');
+        try {
+          const response = await leaveQueue(user.id);
+          if (!response.left) {
+            throw new Error('Не удалось выйти из очереди');
+          }
+        } catch (err: unknown) {
+          // Если на бэкенде записи в очереди уже нет (например, матч уже сформирован), сбрасываем локальное состояние
+          if (!(err instanceof ApiError && err.status === 404)) {
+            throw err;
+          }
         }
 
         setSearching(false);
         setActiveGameMode(null);
         setQueueSize(0);
         setElapsed(0);
+        await refreshUser();
         setToast('Вы вышли из очереди');
         return;
       }
@@ -218,12 +304,15 @@ export default function MatchmakingPage() {
         return;
       }
 
-      const gameMode =
-        format === '5х5'
-          ? '5v5'
-          : format === '2х2'
-            ? '2v2'
-            : '1v1';
+      // Проверяем актуальное состояние пользователя перед входом в очередь
+      const freshProfile = await fetchProfile(user.id);
+      if (freshProfile.current_room_id != null) {
+        await refreshUser();
+        setToast(`Вы уже находитесь в активной комнате #${freshProfile.current_room_id}`);
+        return;
+      }
+
+      const gameMode = FORMAT_TO_GAME_MODE[format];
 
       const preferredMaps = MAP_POOL
         .filter((map) => selectedMaps.includes(map.id))
@@ -251,6 +340,22 @@ export default function MatchmakingPage() {
 
       setToast(`Вы добавлены в очередь. Игроков: ${response.queue_size}`);
     } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 400) {
+        const msg = err.message.toLowerCase();
+        if (msg.includes('already in queue')) {
+          const restored = await syncExistingQueueEntry();
+          if (restored) {
+            setToast('Вы уже находитесь в очереди — поиск восстановлен');
+            return;
+          }
+        }
+        if (msg.includes('already in a room')) {
+          await refreshUser();
+          setToast('Вы уже находитесь в активной комнате');
+          return;
+        }
+      }
+
       setToast(
         err instanceof Error
           ? err.message
@@ -473,57 +578,73 @@ export default function MatchmakingPage() {
     <Box sx={{ maxWidth: 1140, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3.5, pb: 4 }}>
       {/* 1. Format Selector (5x5, 2x2, 1x1) */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            bgcolor: colors.panel,
-            p: 0.5,
-            borderRadius: '6px',
-            border: 1,
-            borderColor: colors.border,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-          }}
+        <Tooltip
+          title={searching ? 'Нельзя сменить режим во время поиска матча' : ''}
+          disableHoverListener={!searching}
+          arrow
         >
-          {(['5х5', '2х2', '1х1'] as MatchFormat[]).map((fmtOption) => {
-            const active = format === fmtOption;
-            return (
-              <Button
-                key={fmtOption}
-                onClick={() => setFormat(fmtOption)}
-                sx={{
-                  px: 3.5,
-                  py: 1,
-                  fontSize: 14,
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                  borderRadius: '4px',
-                  bgcolor: active ? colors.primary : 'transparent',
-                  color: active ? '#FFFFFF' : colors.textSecondary,
-                  transition: 'all 0.15s ease-in-out',
-                  boxShadow: active ? '0 2px 10px rgba(255, 85, 0, 0.4)' : 'none',
-                  '&:hover': {
-                    bgcolor: active ? colors.primaryHover : 'rgba(255, 85, 0, 0.08)',
-                    color: '#FFFFFF',
-                  },
-                }}
-              >
-                {fmtOption}
-                <Box
-                  component="span"
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              bgcolor: colors.panel,
+              p: 0.5,
+              borderRadius: '6px',
+              border: 1,
+              borderColor: colors.border,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            {(['5х5', '2х2', '1х1'] as MatchFormat[]).map((fmtOption) => {
+              const active = format === fmtOption;
+              const formatLocked = searching || queueRequestPending;
+              return (
+                <Button
+                  key={fmtOption}
+                  disabled={formatLocked}
+                  onClick={() => {
+                    if (!formatLocked) setFormat(fmtOption);
+                  }}
                   sx={{
-                    ml: 1,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    opacity: active ? 0.9 : 0.6,
+                    px: 3.5,
+                    py: 1,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    letterSpacing: '0.04em',
+                    borderRadius: '4px',
+                    bgcolor: active ? colors.primary : 'transparent',
+                    color: active ? '#FFFFFF' : colors.textSecondary,
+                    transition: 'all 0.15s ease-in-out',
+                    boxShadow: active ? '0 2px 10px rgba(255, 85, 0, 0.4)' : 'none',
+                    '&:hover': {
+                      bgcolor: active ? colors.primaryHover : 'rgba(255, 85, 0, 0.08)',
+                      color: '#FFFFFF',
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: active ? colors.primary : 'transparent',
+                      color: active ? '#FFFFFF' : colors.muted,
+                      opacity: active ? 0.85 : 0.45,
+                      cursor: 'not-allowed',
+                    },
                   }}
                 >
-                  {fmtOption === '5х5' ? 'Соревновательный' : fmtOption === '2х2' ? 'Напарники' : 'Дуэль'}
-                </Box>
-              </Button>
-            );
-          })}
-        </Box>
+                  {fmtOption}
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 1,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      opacity: active ? 0.9 : 0.6,
+                    }}
+                  >
+                    {fmtOption === '5х5' ? 'Соревновательный' : fmtOption === '2х2' ? 'Напарники' : 'Дуэль'}
+                  </Box>
+                </Button>
+              );
+            })}
+          </Box>
+        </Tooltip>
       </Box>
 
       {/* 2. Level and ELO Progress Banner */}
