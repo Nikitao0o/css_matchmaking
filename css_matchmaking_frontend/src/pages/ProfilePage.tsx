@@ -9,7 +9,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
-import { fetchProfile, type UserProfileResponse } from '@/api';
+import { fetchProfile, fetchProfileByName, type UserProfileResponse } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import KeyValueList from '@/components/KeyValueList';
 import PageHeader from '@/components/PageHeader';
@@ -17,56 +17,68 @@ import Panel from '@/components/Panel';
 import PlayerAvatar from '@/components/PlayerAvatar';
 import StatusBadge from '@/components/StatusBadge';
 import { paths } from '@/router/paths';
+import { getCountryName } from '@/constants/countries';
 import { colors } from '@/theme';
+import { calculateLevel } from '@/utils/elo';
+import { fmt } from '@/utils/format';
 
-const fmt = new Intl.NumberFormat('en-US');
-const TABS = ['Overview', 'Matches', 'Statistics'] as const;
-
-function calculateLevel(elo: number): number {
-  if (elo >= 2001) return 10;
-  if (elo >= 1851) return 9;
-  if (elo >= 1701) return 8;
-  if (elo >= 1551) return 7;
-  if (elo >= 1401) return 6;
-  if (elo >= 1251) return 5;
-  if (elo >= 1101) return 4;
-  if (elo >= 951) return 3;
-  if (elo >= 801) return 2;
-  return 1;
-}
+const TABS = ['Обзор', 'Матчи', 'Статистика'] as const;
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { name } = useParams();
-  const [tab, setTab] = useState<(typeof TABS)[number]>('Overview');
+  const [tab, setTab] = useState<(typeof TABS)[number]>('Обзор');
   const [profileData, setProfileData] = useState<UserProfileResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [authRequiredError, setAuthRequiredError] = useState<string | null>(null);
 
-  const targetId = user?.id;
+  const isOwnProfile = Boolean(
+    user && (!name || name.toLowerCase() === user.username.toLowerCase()),
+  );
 
   useEffect(() => {
-    if (!targetId) {
-      setLoading(false);
-      setError('Вы не авторизованы. Войдите в аккаунт, чтобы просмотреть профиль.');
-      return;
-    }
+    let active = true;
 
-    setLoading(true);
-    setError(null);
+    const loadProfile = async () => {
+      if (isOwnProfile && user) {
+        setLoading(true);
+        setAuthRequiredError(null);
+        try {
+          const data = await fetchProfile(user.id);
+          if (active) setProfileData(data);
+        } catch (err: unknown) {
+          console.error('[API] Ошибка загрузки профиля:', err);
+          if (active) setProfileData(null);
+        } finally {
+          if (active) setLoading(false);
+        }
+        return;
+      }
 
-    fetchProfile(targetId)
-      .then((data) => {
-        setProfileData(data);
-      })
-      .catch((err) => {
-        console.error('Ошибка загрузки профиля:', err);
-        setError('Не удалось загрузить данные игрока. Попробуйте обновить страницу.');
-      })
-      .finally(() => {
+      if (name) {
+        setLoading(true);
+        setAuthRequiredError(null);
+        const data = await fetchProfileByName(name);
+        if (active) {
+          setProfileData(data);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (active) {
+        setProfileData(null);
+        setAuthRequiredError('Вы не авторизованы. Войдите в аккаунт, чтобы просмотреть профиль.');
         setLoading(false);
-      });
-  }, [targetId]);
+      }
+    };
+
+    void loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [isOwnProfile, name, user]);
 
   if (loading) {
     return (
@@ -79,16 +91,29 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !profileData) {
+  if (authRequiredError) {
     return (
       <Box sx={{ py: 6, maxWidth: 600, mx: 'auto' }}>
         <Alert severity="warning" sx={{ mb: 3 }}>
-          {error ?? 'Данные игрока не найдены.'}
+          {authRequiredError}
         </Alert>
         <Button variant="contained" component={RouterLink} to={paths.login}>
           Перейти на страницу входа
         </Button>
       </Box>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <>
+        <PageHeader
+          crumbs={['Stack', 'Players', name ?? '']}
+          title="Профиль игрока"
+          subtitle="Counter-Strike: Source Matchmaking"
+        />
+        <Box sx={{ border: 1, borderColor: 'divider', bgcolor: 'background.paper', py: 8 }} />
+      </>
     );
   }
 
@@ -105,12 +130,14 @@ export default function ProfilePage() {
     <>
       <PageHeader
         crumbs={['Stack', 'Players', username]}
-        title="Player profile"
+        title="Профиль игрока"
         subtitle="Counter-Strike: Source Matchmaking"
         action={
-          <Button variant="outlined" size="small" startIcon={<SettingsOutlined fontSize="small" />} component={RouterLink} to="/settings">
-            Edit profile
-          </Button>
+          isOwnProfile ? (
+            <Button variant="outlined" size="small" startIcon={<SettingsOutlined fontSize="small" />} component={RouterLink} to={paths.settings}>
+              Редактировать профиль
+            </Button>
+          ) : undefined
         }
       />
 
@@ -153,7 +180,7 @@ export default function ProfilePage() {
             </Box>
           </Box>
           <Typography variant="caption">
-            Level {currentLevel} · Рейтинговый профиль
+            Уровень {currentLevel} · Рейтинговый профиль
           </Typography>
         </Box>
       </Box>
@@ -165,9 +192,9 @@ export default function ProfilePage() {
         ))}
       </Tabs>
 
-      {tab !== 'Overview' ? (
+      {tab !== 'Обзор' ? (
         <Box sx={{ py: 8, textAlign: 'center', color: 'text.disabled' }}>
-          {totalMatches === 0 ? 'Матчей пока не сыграно. Запустите матч в поиске игры.' : `${tab} данные загружаются`}
+          {totalMatches === 0 ? 'Матчей пока не сыграно. Запустите матч в поиске игры.' : ''}
         </Box>
       ) : (
         <Box sx={{ mt: 3, display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(0,1fr) 296px' }, alignItems: 'start' }}>
@@ -208,7 +235,7 @@ export default function ProfilePage() {
                   { label: 'Никнейм', value: username },
                   { label: 'Текущий ELO', value: String(currentElo) },
                   { label: 'Статус аккаунта', value: 'Активен' },
-                  { label: 'Регион', value: 'Европа' },
+                  { label: 'Страна / регион', value: getCountryName(profileData.country) },
                 ]}
               />
             </Panel>

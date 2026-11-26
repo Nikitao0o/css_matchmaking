@@ -6,7 +6,7 @@ export default function ComingSoonPage({ title }: { title: string }) {
     <>
       <PageHeader crumbs={['Stack', title]} title={title} />
       <Box sx={{ py: 10, textAlign: 'center', color: 'text.disabled', border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-        This section is not built yet.
+        Этот раздел ещё не готов.
       </Box>
     </>
   );

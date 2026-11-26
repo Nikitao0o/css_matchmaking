@@ -1,7 +1,7 @@
+import Check from '@mui/icons-material/Check';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import MapOutlined from '@mui/icons-material/MapOutlined';
 import OpenInNew from '@mui/icons-material/OpenInNew';
-import Check from '@mui/icons-material/Check';
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import Stop from '@mui/icons-material/Stop';
 import Alert from '@mui/material/Alert';
@@ -10,7 +10,6 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -19,40 +18,37 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
-import { endMatch, fetchConnectCommand, fetchRoom, startMatch, type RoomResponse } from '@/api';
+import { endMatch, fetchConnectCommand, fetchRoom, joinRoom, leaveRoom, startMatch, type RoomResponse } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import KeyValueList from '@/components/KeyValueList';
+import MatchChat from '@/components/MatchChat';
 import PageHeader from '@/components/PageHeader';
 import Panel from '@/components/Panel';
 import PlayerAvatar from '@/components/PlayerAvatar';
 import StatusBadge from '@/components/StatusBadge';
 import { denseTableSx } from '@/components/tableSx';
 import { paths } from '@/router/paths';
-import type { ChatMessage, MatchPlayer } from '@/types';
 import { colors } from '@/theme';
-
-const fmt = new Intl.NumberFormat('en-US');
-const nowHHMM = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+import type { MatchPlayer } from '@/types';
+import { fmt } from '@/utils/format';
 
 export default function MatchPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [toast, setToast] = useState<string | null>(null);
 
   const roomId = id && !isNaN(Number(id)) ? Number(id) : null;
   const [room, setRoom] = useState<RoomResponse | null>(null);
   const [connectCmd, setConnectCmd] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(Boolean(roomId));
+  const [error, setError] = useState<string | null>(roomId ? null : 'Не указан корректный ID комнаты матча.');
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!roomId) {
-      setLoading(false);
-      setError('Не указан корректный ID комнаты матча.');
       return;
     }
 
@@ -87,7 +83,7 @@ export default function MatchPage() {
       }
     };
 
-    loadData();
+    void loadData();
 
     // Опрос состояния комнаты каждые 3 секунды
     const interval = window.setInterval(loadData, 3000);
@@ -126,10 +122,41 @@ export default function MatchPage() {
     setActionLoading(true);
     try {
       await endMatch(roomId);
+      await refreshUser();
       setToast('Матч завершен!');
       navigate(paths.matchmaking);
     } catch (err: unknown) {
       setToast(err instanceof Error ? err.message : 'Ошибка завершения матча');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleJoinRoom = async () => {
+    if (!roomId || !user) return;
+    setActionLoading(true);
+    try {
+      await joinRoom(roomId, user.id);
+      const [updated] = await Promise.all([fetchRoom(roomId), refreshUser()]);
+      setRoom(updated);
+      setToast('Вы присоединились к комнате');
+    } catch (err: unknown) {
+      setToast(err instanceof Error ? err.message : 'Не удалось присоединиться к комнате');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    if (!roomId || !user) return;
+    setActionLoading(true);
+    try {
+      await leaveRoom(roomId, user.id);
+      await refreshUser();
+      setToast('Вы покинули комнату');
+      navigate(paths.matchmaking);
+    } catch (err: unknown) {
+      setToast(err instanceof Error ? err.message : 'Не удалось покинуть комнату');
     } finally {
       setActionLoading(false);
     }
@@ -296,7 +323,7 @@ export default function MatchPage() {
                               <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
                                 <PlayerAvatar initials={p.player.initials} size={28} />
                                 <Box>
-                                  <Link component={RouterLink} to={`/players/${p.player.name}`} color="inherit" underline="hover" sx={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3, display: 'block' }}>
+                                  <Link component={RouterLink} to={paths.player(p.player.name)} color="inherit" underline="hover" sx={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3, display: 'block' }}>
                                     {p.player.name}
                                     {isYou && ' (вы)'}
                                   </Link>
@@ -349,6 +376,17 @@ export default function MatchPage() {
           <Panel title="Управление матчем">
             <Box sx={{ p: 2 }}>
               <Stack spacing={1.5}>
+                {user && !room.players.some((p) => p.id === user.id) && room.status === 'waiting' && (
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    disabled={actionLoading}
+                    onClick={handleJoinRoom}
+                    fullWidth
+                  >
+                    Присоединиться к комнате
+                  </Button>
+                )}
                 <Button
                   variant="contained"
                   color="primary"
@@ -359,6 +397,16 @@ export default function MatchPage() {
                 >
                   Начать матч
                 </Button>
+                {user && room.players.some((p) => p.id === user.id) && (
+                  <Button
+                    variant="outlined"
+                    disabled={actionLoading}
+                    onClick={handleLeaveRoom}
+                    fullWidth
+                  >
+                    Покинуть комнату
+                  </Button>
+                )}
                 <Button
                   variant="outlined"
                   color="error"
@@ -377,55 +425,5 @@ export default function MatchPage() {
 
       <Snackbar open={toast !== null} autoHideDuration={3000} onClose={() => setToast(null)} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
     </>
-  );
-}
-
-function MatchChat({ author }: { author: string }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: 1, time: nowHHMM(), text: 'Сервер матча запущен. Подключайтесь.' },
-  ]);
-  const [text, setText] = useState('');
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [messages]);
-
-  const send = (e: FormEvent) => {
-    e.preventDefault();
-    const value = text.trim();
-    if (!value) return;
-    setMessages((prev) => [...prev, { id: prev.length + 1, time: nowHHMM(), author, text: value }]);
-    setText('');
-  };
-
-  return (
-    <Panel title="Чат матча" caption="Игровой канал">
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ minHeight: 64, maxHeight: 180, overflowY: 'auto', mb: 2, display: 'grid', rowGap: 1, alignContent: 'start' }} aria-live="polite">
-          {messages.map((msg) => (
-            <Box key={msg.id} sx={{ display: 'flex', gap: 1.5, fontSize: 13 }}>
-              <Box sx={{ color: 'text.disabled', width: 36, flexShrink: 0 }}>{msg.time}</Box>
-              {msg.author && <Box sx={{ color: 'primary.main', fontWeight: 600 }}>{msg.author}</Box>}
-              <Box sx={{ color: msg.author ? 'text.primary' : 'text.secondary' }}>{msg.text}</Box>
-            </Box>
-          ))}
-          <div ref={endRef} />
-        </Box>
-        <Box component="form" onSubmit={send} sx={{ display: 'flex', gap: 1 }}>
-          <OutlinedInput
-            fullWidth
-            size="small"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Написать сообщение игрокам…"
-            inputProps={{ 'aria-label': 'Chat message' }}
-          />
-          <Button type="submit" variant="outlined" sx={{ minWidth: 72 }}>
-            Отправить
-          </Button>
-        </Box>
-      </Box>
-    </Panel>
   );
 }

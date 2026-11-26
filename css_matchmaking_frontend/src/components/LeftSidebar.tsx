@@ -4,6 +4,7 @@ import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOu
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HomeOutlined from '@mui/icons-material/HomeOutlined';
 import LeaderboardOutlined from '@mui/icons-material/LeaderboardOutlined';
+import LockOutlined from '@mui/icons-material/LockOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import SportsEsportsOutlined from '@mui/icons-material/SportsEsportsOutlined';
 import Box from '@mui/material/Box';
@@ -12,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { NavLink, Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 
@@ -20,17 +22,19 @@ interface NavItem {
   to: string;
   icon: React.ReactNode;
   exact?: boolean;
+  requiresAuth?: boolean;
 }
 
 const navItems: NavItem[] = [
   { label: 'Главная', to: paths.home, icon: <HomeOutlined sx={{ fontSize: 22 }} />, exact: true },
-  { label: 'Матчмейкинг', to: paths.matchmaking, icon: <SportsEsportsOutlined sx={{ fontSize: 22 }} /> },
-  { label: 'Матчи', to: paths.matches, icon: <FormatListBulletedOutlined sx={{ fontSize: 22 }} /> },
+  { label: 'Матчмейкинг', to: paths.matchmaking, icon: <SportsEsportsOutlined sx={{ fontSize: 22 }} />, requiresAuth: true },
+  { label: 'Матчи', to: paths.matches, icon: <FormatListBulletedOutlined sx={{ fontSize: 22 }} />, requiresAuth: true },
   { label: 'Рейтинг', to: paths.rankings, icon: <LeaderboardOutlined sx={{ fontSize: 22 }} /> },
   { label: 'Игроки', to: paths.players, icon: <GroupOutlined sx={{ fontSize: 22 }} /> },
 ];
 
 export default function LeftSidebar() {
+  const { user } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
 
@@ -170,17 +174,22 @@ export default function LeftSidebar() {
                   {item.icon}
                 </Box>
                 {expanded && (
-                  <Typography
-                    sx={{
-                      ml: 1.5,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                      color: 'inherit',
-                    }}
-                  >
-                    {item.label}
-                  </Typography>
+                  <>
+                    <Typography
+                      sx={{
+                        ml: 1.5,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                        color: 'inherit',
+                      }}
+                    >
+                      {item.label}
+                    </Typography>
+                    {!user && item.requiresAuth && (
+                      <LockOutlined sx={{ fontSize: 14, ml: 'auto', opacity: 0.55 }} />
+                    )}
+                  </>
                 )}
               </Box>
             );
@@ -188,7 +197,12 @@ export default function LeftSidebar() {
             return expanded ? (
               linkContent
             ) : (
-              <Tooltip key={item.to} title={item.label} placement="right" arrow>
+              <Tooltip
+                key={item.to}
+                title={!user && item.requiresAuth ? `${item.label} (требуется вход)` : item.label}
+                placement="right"
+                arrow
+              >
                 {linkContent}
               </Tooltip>
             );
@@ -218,9 +232,12 @@ export default function LeftSidebar() {
         >
           <SettingsOutlined sx={{ fontSize: 20 }} />
           {expanded && (
-            <Typography sx={{ ml: 1.5, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>
-              Настройки
-            </Typography>
+            <>
+              <Typography sx={{ ml: 1.5, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>
+                Настройки
+              </Typography>
+              {!user && <LockOutlined sx={{ fontSize: 14, ml: 'auto', opacity: 0.55 }} />}
+            </>
           )}
         </Box>
 

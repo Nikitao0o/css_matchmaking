@@ -7,7 +7,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import AuthCard from '@/components/AuthCard';
 import Field from '@/components/Field';
@@ -21,6 +21,8 @@ type Errors = Partial<Record<'name' | 'email' | 'password' | 'confirm' | 'agree'
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state as { from?: string } | null)?.from || paths.matchmaking;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,7 +48,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await register(name, email, password);
-      navigate(paths.matchmaking, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setServerError(err.message);
@@ -64,7 +66,7 @@ export default function RegisterPage() {
       footer={
         <>
           Уже есть аккаунт?{' '}
-          <Link component={RouterLink} to="/login" sx={{ fontWeight: 600 }}>
+          <Link component={RouterLink} to={paths.login} sx={{ fontWeight: 600 }}>
             Войти
           </Link>
         </>
@@ -95,8 +97,8 @@ export default function RegisterPage() {
             control={<Checkbox size="small" checked={agree} onChange={(e) => setAgree(e.target.checked)} />}
             label={
               <>
-                Я принимаю <Link component={RouterLink} to="/terms">Условия обслуживания</Link> и{' '}
-                <Link component={RouterLink} to="/privacy">Политику конфиденциальности</Link>.
+                Я принимаю <Link component={RouterLink} to={paths.terms}>Условия обслуживания</Link> и{' '}
+                <Link component={RouterLink} to={paths.privacy}>Политику конфиденциальности</Link>.
               </>
             }
             slotProps={{ typography: { sx: { fontSize: 12, color: 'text.secondary' } } }}

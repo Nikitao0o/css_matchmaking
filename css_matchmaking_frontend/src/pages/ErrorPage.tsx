@@ -11,13 +11,13 @@ export default function ErrorPage() {
     ? `${error.status} ${error.statusText}`
     : error instanceof Error
       ? error.message
-      : 'Unknown error';
+      : 'Неизвестная ошибка';
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', textAlign: 'center', p: 3 }}>
       <Box>
         <Typography variant="h1" sx={{ mb: 1 }}>
-          Something went wrong
+          Произошла ошибка
         </Typography>
         <Typography color="text.disabled" sx={{ mb: 3 }}>
           {message}

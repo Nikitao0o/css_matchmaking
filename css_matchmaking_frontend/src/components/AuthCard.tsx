@@ -4,6 +4,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 
 interface Props {
@@ -41,8 +42,8 @@ export default function AuthCard({ tab, note, footer, children }: Props) {
             bgcolor: colors.header,
           }}
         >
-          <Tab component={RouterLink} to="/login" value="login" label="Вход" sx={{ fontWeight: 700 }} />
-          <Tab component={RouterLink} to="/register" value="register" label="Регистрация" sx={{ fontWeight: 700 }} />
+          <Tab component={RouterLink} to={paths.login} value="login" label="Вход" sx={{ fontWeight: 700 }} />
+          <Tab component={RouterLink} to={paths.register} value="register" label="Регистрация" sx={{ fontWeight: 700 }} />
         </Tabs>
 
         <Box sx={{ p: 3 }}>{children}</Box>

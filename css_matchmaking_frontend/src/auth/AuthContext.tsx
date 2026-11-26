@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { devCreateUser, devLogin, fetchProfile } from '@/api';
 import type { Player } from '@/types';
-import { devCreateUser, devLogin, fetchProfile, type UserProfileResponse } from '@/api';
+import { buildPlayerFromProfile } from '@/utils/elo';
 
 export interface AuthUser {
   id: number;
@@ -10,6 +11,7 @@ export interface AuthUser {
   matches_played: number;
   wins: number;
   losses: number;
+  current_room_id: number | null;
   player: Player;
 }
 
@@ -27,30 +29,6 @@ const STORAGE_KEY = 'mm.auth.user_id';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function buildPlayer(profile: UserProfileResponse): Player {
-  const elo = profile.elo ?? 1000;
-  let level = 1;
-  if (elo >= 2001) level = 10;
-  else if (elo >= 1851) level = 9;
-  else if (elo >= 1701) level = 8;
-  else if (elo >= 1551) level = 7;
-  else if (elo >= 1401) level = 6;
-  else if (elo >= 1251) level = 5;
-  else if (elo >= 1101) level = 4;
-  else if (elo >= 951) level = 3;
-  else if (elo >= 801) level = 2;
-
-  const name = profile.username || `Player #${profile.id}`;
-  return {
-    name,
-    initials: name.slice(0, 2).toUpperCase(),
-    countryCode: 'RU',
-    country: 'Russia',
-    elo,
-    level,
-  };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -66,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       matches_played: profile.matches_played,
       wins: profile.wins,
       losses: profile.losses,
-      player: buildPlayer(profile),
+      current_room_id: profile.current_room_id ?? null,
+      player: buildPlayerFromProfile(profile),
     };
     localStorage.setItem(STORAGE_KEY, String(profile.id));
     setUser(nextUser);
@@ -128,9 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [syncProfile]);
 
   const refreshUser = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user) return;
     await syncProfile(user.id, user.steam_id);
-  }, [user?.id, user?.steam_id, syncProfile]);
+  }, [user, syncProfile]);
 
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);

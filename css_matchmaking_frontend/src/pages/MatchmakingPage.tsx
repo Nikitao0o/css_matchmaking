@@ -1,8 +1,6 @@
 import Check from '@mui/icons-material/Check';
-import Close from '@mui/icons-material/Close';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import MapOutlined from '@mui/icons-material/MapOutlined';
-import PersonAddAlt from '@mui/icons-material/PersonAddAltOutlined';
 import Search from '@mui/icons-material/Search';
 import Verified from '@mui/icons-material/Verified';
 import Box from '@mui/material/Box';
@@ -11,7 +9,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
@@ -21,87 +18,30 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   createRoom,
+  fetchProfile,
+  fetchProfileByName,
   getQueueStatus,
   joinQueue,
   leaveQueue,
+  type UserProfileResponse,
 } from '@/api';
+import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import Field from '@/components/Field';
 import PlayerAvatar from '@/components/PlayerAvatar';
+import TeammateCard, { type TeammateSlot } from '@/components/TeammateCard';
+import { MAP_POOL } from '@/constants/maps';
 import { paths } from '@/router/paths';
 import { colors } from '@/theme';
 import type { Player } from '@/types';
-
-const fmt = new Intl.NumberFormat('en-US');
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-
-const LEVEL_RANGES: Record<number, { min: number; max: number }> = {
-  1: { min: 1, max: 800 },
-  2: { min: 801, max: 950 },
-  3: { min: 951, max: 1100 },
-  4: { min: 1101, max: 1250 },
-  5: { min: 1251, max: 1400 },
-  6: { min: 1401, max: 1550 },
-  7: { min: 1551, max: 1700 },
-  8: { min: 1701, max: 1850 },
-  9: { min: 1851, max: 2000 },
-  10: { min: 2001, max: 3500 },
-};
-
-function getLevelProgress(elo: number, level: number) {
-  const range = LEVEL_RANGES[level] ?? { min: 1, max: 2000 };
-  if (level >= 10) {
-    return {
-      min: 2001,
-      max: Math.max(elo, 3000),
-      percent: 100,
-      toNext: 0,
-      isMax: true,
-    };
-  }
-  const span = range.max - range.min;
-  const currentInLevel = Math.max(0, elo - range.min);
-  const percent = Math.min(100, Math.max(0, (currentInLevel / span) * 100));
-  const toNext = Math.max(0, range.max + 1 - elo);
-  return {
-    min: range.min,
-    max: range.max,
-    percent,
-    toNext,
-    isMax: false,
-  };
-}
-
-interface MapItem {
-  id: string;
-  name: string;
-  code: string;
-  tag: string;
-  badge: string;
-  accent: string;
-}
-
-const MAP_POOL: MapItem[] = [
-  { id: 'mirage', name: 'Mirage', code: 'de_mirage', tag: 'Город', badge: 'MRG', accent: '#E67E22' },
-  { id: 'dust2', name: 'Dust II', code: 'de_dust2', tag: 'Пустыня', badge: 'D2', accent: '#F39C12' },
-  { id: 'inferno', name: 'Inferno', code: 'de_inferno', tag: 'Деревня', badge: 'INF', accent: '#E74C3C' },
-  { id: 'nuke', name: 'Nuke', code: 'de_nuke', tag: 'АЭС', badge: 'NUK', accent: '#3498DB' },
-  { id: 'train', name: 'Train', code: 'de_train', tag: 'Депо', badge: 'TRN', accent: '#95A5A6' },
-  { id: 'cache', name: 'Cache', code: 'de_cache', tag: 'ЧАЭС', badge: 'CCH', accent: '#2ECC71' },
-  { id: 'tuscan', name: 'Tuscan', code: 'de_tuscan', tag: 'Побережье', badge: 'TSC', accent: '#16A085' },
-  { id: 'cbble', name: 'Cobblestone', code: 'de_cbble', tag: 'Замок', badge: 'CBL', accent: '#9B59B6' },
-];
+import { buildPlayerFromProfile, getLevelProgress } from '@/utils/elo';
+import { fmt, mmss } from '@/utils/format';
 
 type MatchFormat = '5х5' | '2х2' | '1х1';
 
-interface TeammateSlot {
-  player?: Player;
-  ready?: boolean;
-}
-
 export default function MatchmakingPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const me: Player = user?.player ?? {
     name: 'Гость (не авторизован)',
     initials: '??',
@@ -113,7 +53,6 @@ export default function MatchmakingPage() {
 
   const [format, setFormat] = useState<MatchFormat>('1х1');
 
-  // Слоты команды вокруг пользователя - по умолчанию пустые (без фейковых игроков)
   const [teammateSlots, setTeammateSlots] = useState<{ [index: number]: TeammateSlot }>({
     0: {},
     1: {},
@@ -129,6 +68,8 @@ export default function MatchmakingPage() {
   const [queueRequestPending, setQueueRequestPending] = useState(false);
   const [inviteSlot, setInviteSlot] = useState<number | null>(null);
   const [customName, setCustomName] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const queueRequestInFlight = useRef(false);
 
@@ -139,7 +80,7 @@ export default function MatchmakingPage() {
   }, [searching]);
 
   useEffect(() => {
-    if (!searching || !activeGameMode) return;
+    if (!searching || !activeGameMode || !user?.id) return;
 
     let active = true;
     let requestInFlight = false;
@@ -149,17 +90,28 @@ export default function MatchmakingPage() {
       requestInFlight = true;
 
       try {
-        const status = await getQueueStatus(activeGameMode);
-        if (active) {
-          setQueueSize(status.count);
-          hasShownStatusError = false;
+        const [status, profile] = await Promise.all([
+          getQueueStatus(activeGameMode),
+          fetchProfile(user.id),
+        ]);
+        if (!active) return;
+
+        if (profile.current_room_id) {
+          setSearching(false);
+          setActiveGameMode(null);
+          await refreshUser();
+          navigate(paths.match(profile.current_room_id));
+          return;
         }
+
+        setQueueSize(status.count);
+        hasShownStatusError = false;
       } catch (err: unknown) {
         if (active && !hasShownStatusError) {
           setToast(
             err instanceof Error
               ? err.message
-              : 'Ошибка получения состояния очереди'
+              : 'Ошибка получения состояния очереди',
           );
           hasShownStatusError = true;
         }
@@ -177,18 +129,16 @@ export default function MatchmakingPage() {
       active = false;
       window.clearInterval(intervalId);
     };
-  }, [searching, activeGameMode]);
+  }, [searching, activeGameMode, user?.id, refreshUser, navigate]);
 
   const levelProgress = useMemo(() => getLevelProgress(me.elo, me.level), [me.elo, me.level]);
 
-  // Active slots for the current match format
   const activeSlotIndexes = useMemo(() => {
     if (format === '1х1') return [];
     if (format === '2х2') return [3];
     return [0, 1, 3, 4];
   }, [format]);
 
-  // Names of all players currently present in lobby (current user + active teammates in slots)
   const lobbyPlayerNames = useMemo(() => {
     const names = new Set<string>();
     if (me.name) names.add(me.name.trim().toLowerCase());
@@ -201,22 +151,35 @@ export default function MatchmakingPage() {
     return names;
   }, [me.name, teammateSlots, activeSlotIndexes]);
 
+  const lobbyPlayerIds = useMemo(() => {
+    const ids = new Set<number>();
+    if (user?.id) ids.add(user.id);
+    activeSlotIndexes.forEach((slotIdx) => {
+      const slot = teammateSlots[slotIdx];
+      if (slot?.userId) ids.add(slot.userId);
+    });
+    return ids;
+  }, [user, teammateSlots, activeSlotIndexes]);
+
   const isCustomAlreadyInLobby = useMemo(() => {
     const trimmed = customName.trim().toLowerCase();
     if (!trimmed) return false;
-    return lobbyPlayerNames.has(trimmed);
-  }, [customName, lobbyPlayerNames]);
+    if (lobbyPlayerNames.has(trimmed)) return true;
+    if (/^\d+$/.test(trimmed) && lobbyPlayerIds.has(Number(trimmed))) return true;
+    return false;
+  }, [customName, lobbyPlayerNames, lobbyPlayerIds]);
 
   const handleCreateRoom = async () => {
     if (!user) {
       navigate(paths.login);
       return;
     }
-    const map = selectedMaps[0] || 'de_dust2';
-    const mode = format === '5х5' ? '5v5' : '1v1';
+    const mapCode = MAP_POOL.find((m) => m.id === selectedMaps[0])?.code ?? 'de_dust2';
+    const mode = format === '5х5' ? '5v5' : format === '2х2' ? '2v2' : '1v1';
     try {
       setToast('Создание комнаты…');
-      const res = await createRoom(user.id, mode, map);
+      const res = await createRoom(user.id, mode, mapCode);
+      await refreshUser();
       navigate(paths.match(res.room_id));
     } catch (err: unknown) {
       setToast(err instanceof Error ? err.message : 'Ошибка создания комнаты');
@@ -236,7 +199,6 @@ export default function MatchmakingPage() {
         return;
       }
 
-      // Если поиск уже идёт — выходим из очереди
       if (searching) {
         const response = await leaveQueue(user.id);
         if (!response.left) {
@@ -251,13 +213,11 @@ export default function MatchmakingPage() {
         return;
       }
 
-      // Проверяем, выбрал ли пользователь карты
       if (selectedMaps.length === 0) {
         setToast('Выберите хотя бы одну карту для поиска матча!');
         return;
       }
 
-      // Преобразуем формат игры
       const gameMode =
         format === '5х5'
           ? '5v5'
@@ -265,7 +225,6 @@ export default function MatchmakingPage() {
             ? '2v2'
             : '1v1';
 
-      // Получаем коды выбранных карт
       const preferredMaps = MAP_POOL
         .filter((map) => selectedMaps.includes(map.id))
         .map((map) => map.code)
@@ -290,16 +249,14 @@ export default function MatchmakingPage() {
       setElapsed(0);
       setSearching(true);
 
-      setToast(
-        `Вы добавлены в очередь. Игроков: ${response.queue_size}`
-      );
+      setToast(`Вы добавлены в очередь. Игроков: ${response.queue_size}`);
     } catch (err: unknown) {
       setToast(
         err instanceof Error
           ? err.message
           : searching
             ? 'Ошибка выхода из очереди'
-            : 'Ошибка подключения к очереди'
+            : 'Ошибка подключения к очереди',
       );
     } finally {
       queueRequestInFlight.current = false;
@@ -323,26 +280,74 @@ export default function MatchmakingPage() {
   const selectAllMaps = () => setSelectedMaps(MAP_POOL.map((m) => m.id));
   const resetMaps = () => setSelectedMaps([MAP_POOL[0].id]);
 
-  const addTeammate = (slotIndex: number, player: Player) => {
+  const closeInviteDialog = () => {
+    setInviteSlot(null);
+    setCustomName('');
+    setInviteError(null);
+    setInviteLoading(false);
+  };
+
+  const addTeammate = (slotIndex: number, player: Player, userId: number) => {
     const normalizedName = player.name.trim().toLowerCase();
-    if (lobbyPlayerNames.has(normalizedName)) {
-      setToast(`Игрок ${player.name} уже находится в лобби!`);
+    if (lobbyPlayerIds.has(userId) || lobbyPlayerNames.has(normalizedName)) {
+      setInviteError(`Игрок ${player.name} уже находится в лобби`);
       return;
     }
     setTeammateSlots((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((key) => {
         const k = Number(key);
-        if (next[k]?.player?.name.trim().toLowerCase() === normalizedName) {
+        if (
+          next[k]?.userId === userId ||
+          next[k]?.player?.name.trim().toLowerCase() === normalizedName
+        ) {
           next[k] = {};
         }
       });
-      next[slotIndex] = { player, ready: true };
+      next[slotIndex] = { userId, player, ready: true };
       return next;
     });
-    setInviteSlot(null);
-    setCustomName('');
+    closeInviteDialog();
     setToast(`Игрок ${player.name} добавлен в пати`);
+  };
+
+  const handleInviteSubmit = async () => {
+    const trimmed = customName.trim();
+    if (inviteSlot === null || !trimmed || isCustomAlreadyInLobby || inviteLoading) return;
+
+    setInviteLoading(true);
+    setInviteError(null);
+
+    try {
+      let profile: UserProfileResponse | null = null;
+
+      if (/^\d+$/.test(trimmed)) {
+        profile = await fetchProfile(Number(trimmed));
+      } else {
+        profile = await fetchProfileByName(trimmed);
+      }
+
+      if (!profile) {
+        setInviteError('Аккаунт игрока не найден');
+        return;
+      }
+
+      if (profile.current_room_id != null) {
+        setInviteError('Этот игрок сейчас находится в другом матче');
+        return;
+      }
+
+      const realPlayer = buildPlayerFromProfile(profile);
+      addTeammate(inviteSlot, realPlayer, profile.id);
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 404) {
+        setInviteError('Аккаунт игрока не найден');
+      } else {
+        setInviteError(err instanceof Error ? err.message : 'Не удалось проверить аккаунт игрока');
+      }
+    } finally {
+      setInviteLoading(false);
+    }
   };
 
   const removeTeammate = (slotIndex: number) => {
@@ -535,7 +540,6 @@ export default function MatchmakingPage() {
           boxShadow: '0 6px 24px rgba(0, 0, 0, 0.35)',
         }}
       >
-        {/* Large level badge */}
         <Box
           sx={{
             width: { xs: 60, sm: 72 },
@@ -559,7 +563,6 @@ export default function MatchmakingPage() {
           </Typography>
         </Box>
 
-        {/* ELO Progress info */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5 }}>
@@ -649,34 +652,25 @@ export default function MatchmakingPage() {
               alignItems: 'stretch',
             }}
           >
-            {/* Card 0: Left slot 1 */}
             <TeammateCard
               slotIndex={0}
               slot={teammateSlots[0]}
               onInvite={() => setInviteSlot(0)}
               onRemove={() => removeTeammate(0)}
             />
-
-            {/* Card 1: Left slot 2 */}
             <TeammateCard
               slotIndex={1}
               slot={teammateSlots[1]}
               onInvite={() => setInviteSlot(1)}
               onRemove={() => removeTeammate(1)}
             />
-
-            {/* Card 2: CENTER (ALWAYS USER) */}
             {userCard}
-
-            {/* Card 3: Right slot 1 */}
             <TeammateCard
               slotIndex={3}
               slot={teammateSlots[3]}
               onInvite={() => setInviteSlot(3)}
               onRemove={() => removeTeammate(3)}
             />
-
-            {/* Card 4: Right slot 2 */}
             <TeammateCard
               slotIndex={4}
               slot={teammateSlots[4]}
@@ -815,7 +809,6 @@ export default function MatchmakingPage() {
                   },
                 }}
               >
-                {/* Active checkmark badge */}
                 {isSelected && (
                   <Box
                     sx={{
@@ -837,7 +830,6 @@ export default function MatchmakingPage() {
                   </Box>
                 )}
 
-                {/* Map Badge Icon */}
                 <Box
                   sx={{
                     width: 44,
@@ -872,73 +864,49 @@ export default function MatchmakingPage() {
       {/* Invite teammate modal */}
       <Dialog
         open={inviteSlot !== null}
-        onClose={() => {
-          setInviteSlot(null);
-          setCustomName('');
-        }}
+        onClose={closeInviteDialog}
         fullWidth
         maxWidth="xs"
       >
         <DialogTitle sx={{ fontWeight: 800, fontSize: 18 }}>Пригласить игрока в пати</DialogTitle>
         <DialogContent
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && customName.trim() && !isCustomAlreadyInLobby && inviteSlot !== null) {
+            if (e.key === 'Enter') {
               e.preventDefault();
-              const trimmed = customName.trim();
-              const customPlayer: Player = {
-                name: trimmed,
-                initials: trimmed.slice(0, 2).toUpperCase(),
-                countryCode: 'RU',
-                country: 'Россия',
-                elo: 1000,
-                level: 1,
-              };
-              addTeammate(inviteSlot, customPlayer);
+              void handleInviteSubmit();
             }
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Введите никнейм игрока для добавления в лобби:
+            Введите ID или никнейм зарегистрированного игрока:
           </Typography>
 
           <Field
-            label="Имя игрока"
+            label="ID или никнейм игрока"
             value={customName}
-            onChange={setCustomName}
-            placeholder="Никнейм игрока"
-            error={isCustomAlreadyInLobby ? 'Этот игрок уже находится в лобби' : undefined}
+            onChange={(val) => {
+              setCustomName(val);
+              if (inviteError) setInviteError(null);
+            }}
+            placeholder="Например: 2 или Player_2"
+            error={
+              isCustomAlreadyInLobby
+                ? 'Этот игрок уже находится в лобби'
+                : inviteError ?? undefined
+            }
             autoFocus
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setInviteSlot(null);
-              setCustomName('');
-            }}
-          >
+          <Button variant="outlined" onClick={closeInviteDialog} disabled={inviteLoading}>
             Отмена
           </Button>
           <Button
             variant="contained"
-            disabled={!customName.trim() || isCustomAlreadyInLobby}
-            onClick={() => {
-              if (inviteSlot !== null && customName.trim() && !isCustomAlreadyInLobby) {
-                const trimmed = customName.trim();
-                const customPlayer: Player = {
-                  name: trimmed,
-                  initials: trimmed.slice(0, 2).toUpperCase(),
-                  countryCode: 'EU',
-                  country: 'Europe',
-                  elo: 1600,
-                  level: 7,
-                };
-                addTeammate(inviteSlot, customPlayer);
-              }
-            }}
+            disabled={!customName.trim() || isCustomAlreadyInLobby || inviteLoading}
+            onClick={() => void handleInviteSubmit()}
           >
-            Пригласить
+            {inviteLoading ? 'Проверка…' : 'Пригласить'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -950,196 +918,6 @@ export default function MatchmakingPage() {
         message={toast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
-    </Box>
-  );
-}
-
-interface TeammateCardProps {
-  slotIndex: number;
-  slot: TeammateSlot;
-  onInvite: () => void;
-  onRemove: () => void;
-  label?: string;
-}
-
-function TeammateCard({ slotIndex: _idx, slot, onInvite, onRemove, label }: TeammateCardProps) {
-  if (slot.player) {
-    const { player, ready } = slot;
-    return (
-      <Box
-        sx={{
-          position: 'relative',
-          bgcolor: colors.panel,
-          border: 1,
-          borderColor: colors.border,
-          borderRadius: 2,
-          p: 2.5,
-          minHeight: 270,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
-          transition: 'all 0.15s ease',
-          '&:hover': {
-            borderColor: '#3F3F46',
-          },
-        }}
-      >
-        {label && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 10,
-              left: 12,
-              px: 1,
-              py: 0.2,
-              borderRadius: '4px',
-              bgcolor: 'rgba(255, 255, 255, 0.06)',
-              fontSize: 10,
-              fontWeight: 800,
-              color: colors.textSecondary,
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {label}
-          </Box>
-        )}
-        <Tooltip title="Исключить из пати" arrow>
-          <IconButton
-            size="small"
-            onClick={onRemove}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              color: colors.textSecondary,
-              '&:hover': { color: colors.danger },
-            }}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-        </Tooltip>
-
-        <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1.5 }}>
-          <PlayerAvatar
-            initials={player.initials}
-            size={64}
-            sx={{
-              border: `2px solid ${player.level === 10 ? '#EF4444' : colors.primary}`,
-              borderRadius: '50%',
-              fontSize: 20,
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -6,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              px: 0.7,
-              py: 0.1,
-              bgcolor: player.level === 10 ? '#EF4444' : colors.primary,
-              color: '#FFFFFF',
-              fontSize: 9,
-              fontWeight: 900,
-              borderRadius: '999px',
-              border: '2px solid #18181B',
-              lineHeight: 1.1,
-            }}
-          >
-            LVL {player.level}
-          </Box>
-        </Box>
-
-        <Typography sx={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF', mb: 0.5, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {player.name}
-        </Typography>
-        <Typography variant="caption" sx={{ color: colors.textSecondary, mb: 1.5, fontSize: 11 }}>
-          {player.countryCode} · {player.country}
-        </Typography>
-
-        <Box
-          sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            px: 1.25,
-            py: 0.3,
-            borderRadius: '4px',
-            mb: 2,
-          }}
-        >
-          <Typography sx={{ fontSize: 12, fontWeight: 700, color: colors.textSecondary }}>
-            {fmt.format(player.elo)} ELO
-          </Typography>
-        </Box>
-
-        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: ready ? colors.success : colors.muted, fontSize: 12, fontWeight: 600 }}>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ready ? colors.success : colors.muted }} />
-          <span>{ready ? 'Готов' : 'Не готов'}</span>
-        </Stack>
-      </Box>
-    );
-  }
-
-  // Empty slot
-  return (
-    <Box
-      onClick={onInvite}
-      sx={{
-        bgcolor: '#131317',
-        border: '1.5px dashed #2A2A33',
-        borderRadius: 2,
-        p: 2.5,
-        minHeight: 270,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        '&:hover': {
-          borderColor: colors.primary,
-          bgcolor: 'rgba(255, 85, 0, 0.04)',
-          transform: 'translateY(-2px)',
-          '& .plus-circle': {
-            bgcolor: colors.primary,
-            color: '#FFFFFF',
-            transform: 'scale(1.08)',
-          },
-        },
-      }}
-    >
-      <Box
-        className="plus-circle"
-        sx={{
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          bgcolor: '#1C1C22',
-          border: '1px solid #32323D',
-          color: colors.textSecondary,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: 1.5,
-          transition: 'all 0.15s ease',
-        }}
-      >
-        <PersonAddAlt sx={{ fontSize: 24 }} />
-      </Box>
-
-      <Typography sx={{ fontSize: 13, fontWeight: 700, color: colors.textSecondary, mb: 0.5 }}>
-        {label ? 'Слот напарника' : 'Свободный слот'}
-      </Typography>
-      <Typography variant="caption" sx={{ color: colors.muted, fontSize: 11 }}>
-        Нажмите, чтобы позвать
-      </Typography>
     </Box>
   );
 }

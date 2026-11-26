@@ -6,8 +6,8 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import SportsEsports from '@mui/icons-material/SportsEsports';
 import { useState, type FormEvent } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/api/config';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { getSteamLoginUrl } from '@/api';
 import { useAuth } from '@/auth/AuthContext';
 import AuthCard from '@/components/AuthCard';
 import Field from '@/components/Field';
@@ -17,6 +17,8 @@ import { colors } from '@/theme';
 export default function LoginPage() {
   const { login, quickLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state as { from?: string } | null)?.from || paths.matchmaking;
   const [identifier, setIdentifier] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +36,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(val);
-      navigate(paths.matchmaking, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setAuthError(err.message);
@@ -51,7 +53,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await quickLogin(username);
-      navigate(paths.matchmaking, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setAuthError(err.message);
@@ -69,7 +71,7 @@ export default function LoginPage() {
       footer={
         <>
           Нет аккаунта?{' '}
-          <Link component={RouterLink} to="/register" sx={{ fontWeight: 600 }}>
+          <Link component={RouterLink} to={paths.register} sx={{ fontWeight: 600 }}>
             Создать аккаунт
           </Link>
         </>
@@ -116,7 +118,7 @@ export default function LoginPage() {
             size="large"
             fullWidth
             component="a"
-            href={`${API_BASE_URL}/login`}
+            href={getSteamLoginUrl()}
             startIcon={<SportsEsports />}
             sx={{
               borderColor: '#171a21',
