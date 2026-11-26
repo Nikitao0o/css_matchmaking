@@ -45,7 +45,7 @@ class PlayerStats(Base):
     user = relationship("User", back_populates="stats")
 
 
-class MatchRoom(Base):
+class MatchRoom(Base):# room where players can chat/get match ip
     __tablename__ = "match_rooms"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -104,7 +104,7 @@ class GameServer(Base):
     region = Column(String, nullable=True)
     last_heartbeat = Column(DateTime, default=datetime.utcnow)
 
-class QueueEntry(Base):
+class QueueEntry(Base):# current queue entry
     __tablename__ = "queue_entries"
 
     id = Column(Integer, primary_key=True, index=True)

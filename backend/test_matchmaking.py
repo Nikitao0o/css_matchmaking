@@ -56,8 +56,6 @@ def login(user_id: int) -> dict:
 def main():
     # 1. Ensure users exist
     print("\n>Ensuring users")
-    # 1. Ensure users exist
-    print("\n>Ensuring users")
     uid_a = ensure_user("Alice", USER_A_ID)
     uid_b = ensure_user("Bob", USER_B_ID)
 
@@ -102,7 +100,6 @@ def main():
     assert pa["current_room_id"] == room_id, f"Alice not linked to room {room_id}"
     assert pb["current_room_id"] == room_id, f"Bob not linked to room {room_id}"
 
-    # 7. Build the connect command
     # 7. Build the connect command
     server = room["server"]
     connect_cmd = f"connect {server['ip']}:{server['port']}"
